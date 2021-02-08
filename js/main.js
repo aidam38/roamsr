@@ -283,10 +283,6 @@ roamsr.setCustomStyle = (yes) => {
 
 roamsr.addBasicStyles = () => {
   var style = `
-  .roamsr-widget:hover {
-    color: inherit !important;
-    background-color: inherit !important;
-  }
   .roamsr-widget__review-button {
     color: #5C7080 !important;
   }
