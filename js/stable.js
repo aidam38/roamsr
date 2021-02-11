@@ -1,7 +1,16 @@
+/* roam/sr - Spaced Repetition in Roam Research
+   Author: Adam Krivka
+   v1.0.0
+   https://github.com/aidam38/roamsr
+ */
+
+var VERSION = "v1.0.0";
+
 if (!window.roamsr) window.roamsr = {};
 
-// --- Schedulers / algorithms ---
-roamsr.ankiScheduler = (userConfig) => {  
+/* ====== SCHEDULERS / ALGORITHMS ====== */
+
+roamsr.ankiScheduler = (userConfig) => {
   var config = {
     defaultFactor: 2.5,
     firstFewIntervals: [1, 6],
@@ -83,7 +92,8 @@ roamsr.ankiScheduler = (userConfig) => {
   return algorithm;
 };
 
-// --- Helper functions ---
+/* ====== HELPER FUNCTIONS ====== */
+
 roamsr.sleep = m => {
   var t = m ? m : 10;
   return new Promise(r => setTimeout(r, t))
@@ -137,7 +147,8 @@ roamsr.getIntervalHumanReadable = (n) => {
   else if (n <= 365) return (n / 30).toFixed(1) + " m"
 };
 
-// --- Loading cards and style ---
+/* ====== LOADING CARDS ====== */
+
 roamsr.loadCards = async (limits, dateBasis = new Date()) => {
   // Querying for `#sr` and its history and converting to something sensible
   var recur = (part) => {
@@ -215,10 +226,10 @@ roamsr.loadCards = async (limits, dateBasis = new Date()) => {
   cards = cards.map(card => {
     if (card.decks && card.decks.length > 0) {
       var preferredDeck = roamsr.settings.customDecks.filter(customDeck => customDeck.tag == card.decks[card.decks.length - 1])[0];
-      if(!preferredDeck.algorithm || preferredDeck.algorithm === "anki") card.algorithm = roamsr.ankiScheduler(preferredDeck.config);
+      if (!preferredDeck.algorithm || preferredDeck.algorithm === "anki") card.algorithm = roamsr.ankiScheduler(preferredDeck.config);
       else card.algorithm = preferredDeck.algorithm(preferredDeck.config);
     } else {
-      if(!roamsr.settings.defaultDeck.algorithm || roamsr.settings.defaultDeck.algorithm === "anki") card.algorithm = roamsr.ankiScheduler(roamsr.settings.defaultDeck.config);
+      if (!roamsr.settings.defaultDeck.algorithm || roamsr.settings.defaultDeck.algorithm === "anki") card.algorithm = roamsr.ankiScheduler(roamsr.settings.defaultDeck.config);
       else card.algorithm = roamsr.settings.defaultDeck.algorithm(roamsr.settings.defaultDeck.config);
     }
     return card;
@@ -256,7 +267,8 @@ roamsr.loadCards = async (limits, dateBasis = new Date()) => {
   return cards;
 };
 
-// --- Styles ---
+/* ====== STYLES ====== */
+
 roamsr.setCustomStyle = (yes) => {
   var styleId = "roamsr-css-custom"
   var element = document.getElementById(styleId);
@@ -352,7 +364,8 @@ roamsr.showAnswerAndCloze = (yes) => {
   }
 };
 
-// --- Main functions ---
+/* ====== MAIN FUNCTIONS ====== */
+
 roamsr.scheduleCardIn = async (card, interval) => {
   var nextDate = new Date();
   nextDate.setDate(nextDate.getDate() + interval);
@@ -500,7 +513,8 @@ roamsr.goToCurrentCard = async () => {
   }
 };
 
-// --- Sessions ---
+/* ====== SESSIONS ====== */
+
 roamsr.loadSettings = () => {
   // Default settings
   roamsr.settings = {
@@ -583,8 +597,9 @@ roamsr.endSession = async () => {
   await doStuff(); // ... again to make sure
 };
 
-// --- UI elements ---
-// Common
+/* ====== UI ELEMENTS ====== */
+
+// COMMON
 roamsr.getCounter = (deck) => {
   // Getting the number of new cards
   var cardCount = [0, 0];
@@ -613,7 +628,7 @@ roamsr.updateCounters = () => {
   })
 };
 
-// Container
+// CONTAINER
 roamsr.addContainer = () => {
   if (!document.querySelector(".roamsr-container")) {
     var wrapper = Object.assign(document.createElement("div"), {
@@ -692,7 +707,7 @@ roamsr.addResponseButtons = () => {
   }
 };
 
-// Return button
+// RETURN BUTTON
 roamsr.addReturnButton = () => {
   var returnButtonClass = "roamsr-return-button-container";
   if (document.querySelector(returnButtonClass)) return;
@@ -715,7 +730,7 @@ roamsr.removeReturnButton = () => {
   roamsr.removeSelector(".roamsr-return-button-container");
 };
 
-// Sidebar widget
+// SIDEBAR WIDGET
 roamsr.createWidget = () => {
   var widget = Object.assign(document.createElement("div"), {
     className: "log-button flex-h-box roamsr-widget",
@@ -773,7 +788,7 @@ roamsr.addWidget = () => {
   }
 };
 
-// --- Keybindings ---
+/* ====== KEYBINDINGS ====== */
 roamsr.processKey = (e) => {
   // console.log("alt: " + e.altKey + "  shift: " + e.shiftKey + "  ctrl: " + e.ctrlKey + "   code: " + e.code + "   key: " + e.key);
   if (document.activeElement.type == "textarea" || !location.href.includes(roamsr.getCurrentCard().uid)) {
@@ -834,7 +849,7 @@ roamsr.removeKeyListener = () => {
   document.removeEventListener("keydown", roamsr.processKey);
 };
 
-// --- {{sr}} button ---
+/* ====== {{sr}} BUTTON ====== */
 roamsr.buttonClickHandler = async (e) => {
   if (e.target.tagName === 'BUTTON' && e.target.textContent === roamsr.settings.mainTag) {
     var block = e.target.closest('.roam-block');
@@ -861,9 +876,14 @@ roamsr.buttonClickHandler = async (e) => {
 
 document.addEventListener("click", roamsr.buttonClickHandler, false);
 
-// --- Creating state, calling functions directly ---
+/* ====== CALLING FUNCTIONS DIRECTLY ====== */
+
+console.log("🗃️ Loading roam/sr " + VERSION + ".");
+
 roamsr.loadSettings();
 roamsr.addBasicStyles();
 roamsr.loadState(-1).then(res => {
   roamsr.addWidget();
 });
+
+console.log("🗃️ Successfully loaded roam/sr " + VERSION + ".")
