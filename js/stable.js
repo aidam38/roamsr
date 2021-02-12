@@ -29,7 +29,7 @@ roamsr.ankiScheduler = (userConfig) => {
     var lastFail = history ? history.map(review => review.signal).lastIndexOf("1") : 0;
     history = history ? (lastFail == -1 ? history : history.slice(lastFail+1)) : [];
     // Check if in learning phase
-    if (history.length == 0 || history.length < config.firstFewIntervals.length) {
+    if (history.length == 0 || history.length <= config.firstFewIntervals.length) {
       return [{
         responseText: config.responseTexts[0],
         signal: 1,
@@ -57,12 +57,12 @@ roamsr.ankiScheduler = (userConfig) => {
           }
         })();
         return [newFactor, Math.min(newInterval, config.maxInterval)];
-      }
+      };
       var getDelay = (hist, prevInterval) => {
         if (hist && hist.length > 1)
           return Math.max((new Date(hist[hist.length - 1].date) - new Date(hist[hist.length - 2].date)) / (1000 * 60 * 60 * 24) - prevInterval, 0);
         else return 0;
-      }
+      };
       var recurAnki = (hist) => {
         if (!hist || hist.length <= config.firstFewIntervals.length) {
           return [config.defaultFactor, config.firstFewIntervals[config.firstFewIntervals.length - 1]];
@@ -70,7 +70,7 @@ roamsr.ankiScheduler = (userConfig) => {
           var [prevFactor, prevInterval] = recurAnki(hist.slice(0, -1));
           return calculateNewParams(prevFactor, prevInterval, getDelay(hist, prevInterval), hist[hist.length - 1].signal);
         }
-      }
+      };
 
       var [finalFactor, finalInterval] = recurAnki(history.slice(0, -1));
 
@@ -839,7 +839,7 @@ roamsr.addWidget = () => {
 
 /* ====== KEYBINDINGS ====== */
 roamsr.processKey = (e) => {
-  console.log("alt: " + e.altKey + "  shift: " + e.shiftKey + "  ctrl: " + e.ctrlKey + "   code: " + e.code + "   key: " + e.key);
+  // console.log("alt: " + e.altKey + "  shift: " + e.shiftKey + "  ctrl: " + e.ctrlKey + "   code: " + e.code + "   key: " + e.key);
   if (document.activeElement.type == "textarea" || !location.href.includes(roamsr.getCurrentCard().uid)) {
     return;
   }
