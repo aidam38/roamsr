@@ -1,16 +1,12 @@
 window.roamsrUserSettings = {};
 
-var fixedScheduler = (config) => {
+// Example custom algorithm
+var weeklyScheduler = (config) => {
   var algorithm = (history, signal) => {
     return [{
       signal: 0,
       interval: 7,
       responseText: "Next week.",
-    },
-    {
-      signal: 1,
-      interval: 31,
-      responseText: "Next month."
     }]
   }
   return algorithm;
@@ -19,24 +15,29 @@ var fixedScheduler = (config) => {
 roamsrUserSettings = {
   mainTag: "sr",
   flagTag: "f",
+  clozeStyle: "highlight" // "highlight" or "blockref"
   defaultDeck: {
-    algorithm: null,
+    algorithm: "anki", // Default algorithm
     config: {
-      responses: [
-        "AAA.",
-          "Wtf ok.",
-          "Yay.",
-          "EZ."]
+      defaultFactor: 2.5,
+      firstFewIntervals: [1, 6],
+      factorModifier: 0.15,
+      easeBonus: 1.3,
+      hardFactor: 1.2,
+      minFactor: 1.3,
+      jitterPercentage: 0.05,
+      maxInterval: 50 * 365,
+      responseTexts: ["Again.", "Hard.", "Good.", "Easy."]
     },
     newCardLimit: 20,
     reviewLimit: 50
   },
   customDecks: [
     {
-      tag: "deck/fixed",
-      algorithm: fixedScheduler,
+      tag: "weekly",
+      algorithm: weeklyScheduler,
       config: {},
       newCardLimit: 20,
-      reviewLimit: 200,
-    }]
+      reviewLimit: 50,
+    }],
 };

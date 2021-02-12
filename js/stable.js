@@ -26,8 +26,8 @@ roamsr.ankiScheduler = (userConfig) => {
 
   var algorithm = (history) => {
     var nextInterval;
-    var lastFail = history ? (history.map(review => review.signal).lastIndexOf("1") + 1) : 0;
-    history = history ? (lastFail == -1 ? history : history.slice(lastFail)) : [];
+    var lastFail = history ? history.map(review => review.signal).lastIndexOf("1") : 0;
+    history = history ? (lastFail == -1 ? history : history.slice(lastFail+1)) : [];
     // Check if in learning phase
     if (history.length == 0 || history.length < config.firstFewIntervals.length) {
       return [{
@@ -135,9 +135,12 @@ roamsr.getRoamDate = (date) => {
 
   var pad = (n) => n.toString().padStart(2, "0");
 
-  var title = months[date.getMonth()] + " " + date.getDate() + suffix + ", " + date.getFullYear();
-  var uid = pad(date.getMonth() + 1) + "-" + pad(date.getDate()) + "-" + date.getFullYear();
-  return [title, uid]
+  var roamDate = {
+    title: months[date.getMonth()] + " " + date.getDate() + suffix + ", " + date.getFullYear(),
+    uid: pad(date.getMonth() + 1) + "-" + pad(date.getDate()) + "-" + date.getFullYear()
+  };
+
+  return roamDate
 };
 
 roamsr.getIntervalHumanReadable = (n) => {
@@ -150,105 +153,139 @@ roamsr.getIntervalHumanReadable = (n) => {
 /* ====== LOADING CARDS ====== */
 
 roamsr.loadCards = async (limits, dateBasis = new Date()) => {
-  // Querying for `#sr` and its history and converting to something sensible
-  var recur = (part) => {
-    var result = [];
-    if (part.refs) result.push(...part.refs)
-    if (part._children && part._children.length > 0) result.push(...recur(part._children[0]))
-    return result;
-  }
-  var mainQuery = `[
-    :find (pull ?card [:block/string :block/uid 
-    {:block/refs [:node/title]} 
-    {:block/_refs [:block/uid :block/string {:block/_children [:block/uid {:block/refs [:node/title]}]} {:block/refs [:node/title]} {:block/page [:block/uid]}]}
-    {:block/_children ...}])
-    :where [?card :block/refs ?srPage] [?srPage :node/title "${roamsr.settings.mainTag}"] (not-join [?card] [?card :block/refs ?flagPage] [?flagPage :node/title "${roamsr.settings.flagTag}"])]`
-  var mainQueryResult = await window.roamAlphaAPI.q(mainQuery);
-  var cards = mainQueryResult.map(result => {
-    return {
-      uid: result[0].uid,
-      string: result[0].string,
-      history: result[0]._refs ? result[0]._refs
+  // Common functions
+  var getDecks = (res) => {
+    let recurDeck = (part) => {
+      var result = [];
+      if (part.refs) result.push(...part.refs)
+      if (part._children && part._children.length > 0) result.push(...recurDeck(part._children[0]))
+      return result;
+    }
+    var possibleDecks = recurDeck(res).map(deck => deck.title);
+    return possibleDecks.filter(deckTag => roamsr.settings.customDecks.map(customDeck => customDeck.tag).includes(deckTag));
+  };
+
+  var getAlgorithm = (res) => {
+    let decks = getDecks(res);
+    let preferredDeck;
+    let algorithm;
+
+    if (decks && decks.length > 0) {
+      preferredDeck = roamsr.settings.customDecks.filter(customDeck => customDeck.tag == decks[decks.length - 1])[0];
+    } else preferredDeck = roamsr.settings.defaultDeck;
+
+    if (!preferredDeck.algorithm || preferredDeck.algorithm === "anki") {
+      algorithm = roamsr.ankiScheduler(preferredDeck.config);
+    } else algorithm = preferredDeck.algorithm(preferredDeck.config);
+
+    return algorithm;
+  };
+
+  var isNew = (res) => {
+    return res._refs ? !res._refs.some(review => {
+      var reviewDate = new Date(review.page ? review.page.uid : null);
+      reviewDate.setDate(reviewDate.getDate() + 1);
+      return reviewDate < dateBasis;
+    }) : true
+  };
+
+  var getHistory = (res) => {
+    if (res._refs) {
+      return res._refs
         .filter(ref => (ref._children && ref._children[0].refs) ? ref._children[0].refs.map(ref2 => ref2.title).includes("roam/sr/review") : false)
         .map(review => {
           return {
-            date: review.page.uid,
+            date: review.page ? review.page.uid : null,
             signal: review.refs[0] ? review.refs[0].title.slice(2) : null,
             uid: review.uid,
             string: review.string
           }
         })
-        .sort((a, b) => new Date(a.date) - (new Date(b.date))) : [],
-      isNew: result[0]._refs ? !result[0]._refs.some(review => {
-        var reviewDate = new Date(review.page.uid);
-        reviewDate.setDate(reviewDate.getDate() + 1);
-        return reviewDate < dateBasis;
-      }) : true,
-      decks: recur(result[0]).map(deck => deck.title)
-    };
+        .sort((a, b) => new Date(a.date) - (new Date(b.date)))
+    } else return []
+  };
+
+  // Query for all cards and their history
+  var mainQuery = `[
+    :find (pull ?card [
+      :block/string 
+      :block/uid 
+      {:block/refs [:node/title]} 
+      {:block/_refs [:block/uid :block/string {:block/_children [:block/uid {:block/refs [:node/title]}]} {:block/refs [:node/title]} {:block/page [:block/uid]}]}
+      {:block/_children ...}
+    ])
+    :where 
+      [?card :block/refs ?srPage] 
+      [?srPage :node/title "${roamsr.settings.mainTag}"] 
+      (not-join [?card] 
+        [?card :block/refs ?flagPage] 
+        [?flagPage :node/title "${roamsr.settings.flagTag}"])
+      (not-join [?card] 
+        [?card :block/refs ?queryPage] 
+        [?queryPage :node/title "query"])
+    ]`
+  var mainQueryResult = await window.roamAlphaAPI.q(mainQuery);
+  var cards = mainQueryResult.map(result => {
+    let res = result[0];
+    let card = {
+      uid: res.uid,
+      isNew: isNew(res),
+      decks: getDecks(res),
+      algorithm: getAlgorithm(res),
+      string: res.string,
+      history: getHistory(res),
+    }
+    return card;
   });
 
-  // Query for todays review
+  // Query for today's review
   var todayUid = roamsr.getRoamDate()[1];
   var todayQuery = `[
-    :find (pull ?card [:block/uid {:block/refs [:node/title]} {:block/_refs [{:block/page [:block/uid]}]}]) (pull ?review [:block/refs])
-    :where [?reviewParent :block/children ?review] [?reviewParent :block/page ?todayPage] [?todayPage :block/uid "${todayUid}"] [?reviewParent :block/refs ?reviewPage] [?reviewPage :node/title "roam/sr/review"] [?review :block/refs ?card] [?card :block/refs ?srPage] [?srPage :node/title "${roamsr.settings.mainTag}"]]`
+    :find (pull ?card 
+      [:block/uid 
+      {:block/refs [:node/title]} 
+      {:block/_refs [{:block/page [:block/uid]}]}]) 
+      (pull ?review [:block/refs])
+    :where 
+      [?reviewParent :block/children ?review] 
+      [?reviewParent :block/page ?todayPage] 
+      [?todayPage :block/uid "${todayUid}"] 
+      [?reviewParent :block/refs ?reviewPage] 
+      [?reviewPage :node/title "roam/sr/review"] 
+      [?review :block/refs ?card] 
+      [?card :block/refs ?srPage] 
+      [?srPage :node/title "${roamsr.settings.mainTag}"]
+    ]`
   var todayQueryResult = await window.roamAlphaAPI.q(todayQuery);
   var todayReviewedCards = todayQueryResult
     .filter(result => result[1].refs.length == 2)
     .map(result => {
-      return {
+      let card = {
         uid: result[0].uid,
-        isNew: result[0]._refs ? !result[0]._refs.some(review => {
-          var reviewDate = new Date(review.page.uid);
-          reviewDate.setDate(reviewDate.getDate() + 1);
-          return reviewDate < dateBasis
-        }) : true,
-        decks: recur(result[0]).map(deck => deck.title)
-      }
+        isNew: isNew(result[0]),
+        decks: getDecks(result[0])
+      };
+      return card;
     })
 
   // Filter only cards that are due
   cards = cards.filter(card => card.history.length > 0 ? card.history.some(review => { return (!review.signal && new Date(review.date) <= dateBasis) }) : true);
 
-  // Detect decks
-  cards = cards.map(card => {
-    card.decks = card.decks.filter(deckTag => roamsr.settings.customDecks.map(customDeck => customDeck.tag).includes(deckTag));
-    return card;
-  });
-
-  todayReviewedCards = todayReviewedCards.map(card => {
-    card.decks = card.decks.filter(deckTag => roamsr.settings.customDecks.map(customDeck => customDeck.tag).includes(deckTag));
-    return card;
-  });
-
-  // Save which algorithm
-  cards = cards.map(card => {
-    if (card.decks && card.decks.length > 0) {
-      var preferredDeck = roamsr.settings.customDecks.filter(customDeck => customDeck.tag == card.decks[card.decks.length - 1])[0];
-      if (!preferredDeck.algorithm || preferredDeck.algorithm === "anki") card.algorithm = roamsr.ankiScheduler(preferredDeck.config);
-      else card.algorithm = preferredDeck.algorithm(preferredDeck.config);
-    } else {
-      if (!roamsr.settings.defaultDeck.algorithm || roamsr.settings.defaultDeck.algorithm === "anki") card.algorithm = roamsr.ankiScheduler(roamsr.settings.defaultDeck.config);
-      else card.algorithm = roamsr.settings.defaultDeck.algorithm(roamsr.settings.defaultDeck.config);
-    }
-    return card;
-  });
-
-  // Filter those that are over limit
+  // Filter out cards over limit
   roamsr.state.extraCards = [[], []];
   if (roamsr.state.limits) {
     for (deck of roamsr.settings.customDecks.concat(roamsr.settings.defaultDeck)) {
+
       var todayReviews = todayReviewedCards.reduce((a, card) => {
         if (deck.tag ? card.decks.includes(deck.tag) : card.decks.length == 0) {
           if (!a[2].includes(card.uid)) {
             a[2].push(card.uid);
-            if (card.isNew) a[0]++;
-            else a[1]++;
+            a[card.isNew ? 0 : 1]++;
           }
         }
         return a;
       }, [0, 0, []]);
+
       cards.reduceRight((a, card, i) => {
         if (deck.tag ? card.decks.includes(deck.tag) : card.decks.length == 0) {
           var j = card.isNew ? 0 : 1;
@@ -260,38 +297,14 @@ roamsr.loadCards = async (limits, dateBasis = new Date()) => {
         return a;
       }, [0, 0])
     }
-  }
+  };
 
-  // Order (new to front)
+  // Sort (new to front)
   cards = cards.sort((a, b) => a.history.length - b.history.length);
   return cards;
 };
 
 /* ====== STYLES ====== */
-
-roamsr.setCustomStyle = (yes) => {
-  var styleId = "roamsr-css-custom"
-  var element = document.getElementById(styleId);
-  if (element) element.remove();
-
-  if (yes) {
-    // Query new style
-    var styleQuery = window.roamAlphaAPI.q(
-      `[:find (pull ?style [:block/string]) :where [?roamsr :node/title "roam\/sr"] [?roamsr :block/children ?css] [?css :block/refs ?roamcss] [?roamcss :node/title "roam\/css"] [?css :block/children ?style]]`
-    );
-
-    if (styleQuery && styleQuery.length != 0) {
-      var customStyle = styleQuery[0][0].string.replace("```css", "").replace("```", "");
-
-      var roamsrCSS = Object.assign(document.createElement("style"), {
-        id: styleId,
-        innerHTML: customStyle
-      });
-
-      document.getElementsByTagName("head")[0].appendChild(roamsrCSS);
-    }
-  }
-};
 
 roamsr.addBasicStyles = () => {
   var style = `
@@ -307,11 +320,13 @@ roamsr.addBasicStyles = () => {
     z-index: 100000;
     margin: 5px 0px 5px 45px;
   }
+
   .roamsr-wrapper {
     position: relative;
     bottom: 180px;
     justify-content: center;
   }
+
   .roamsr-container {
     z-index: 10000;
     width: 100%;
@@ -338,6 +353,30 @@ roamsr.addBasicStyles = () => {
   document.getElementsByTagName("head")[0].appendChild(basicStyles);
 };
 
+roamsr.setCustomStyle = (yes) => {
+  var styleId = "roamsr-css-custom"
+  var element = document.getElementById(styleId);
+  if (element) element.remove();
+
+  if (yes) {
+    // Query new style
+    var styleQuery = window.roamAlphaAPI.q(
+      `[:find (pull ?style [:block/string]) :where [?roamsr :node/title "roam\/sr"] [?roamsr :block/children ?css] [?css :block/refs ?roamcss] [?roamcss :node/title "roam\/css"] [?css :block/children ?style]]`
+    );
+
+    if (styleQuery && styleQuery.length != 0) {
+      var customStyle = styleQuery[0][0].string.replace("```css", "").replace("```", "");
+
+      var roamsrCSS = Object.assign(document.createElement("style"), {
+        id: styleId,
+        innerHTML: customStyle
+      });
+
+      document.getElementsByTagName("head")[0].appendChild(roamsrCSS);
+    }
+  }
+};
+
 roamsr.showAnswerAndCloze = (yes) => {
   var styleId = "roamsr-css-mainview"
   var element = document.getElementById(styleId);
@@ -351,7 +390,7 @@ roamsr.showAnswerAndCloze = (yes) => {
     display: none;  
   }
 
-  .rm-block-ref {
+  .roam-article .rm-block-ref {
     background-color: #cccccc;
     color: #cccccc;
   }`
@@ -370,19 +409,19 @@ roamsr.scheduleCardIn = async (card, interval) => {
   var nextDate = new Date();
   nextDate.setDate(nextDate.getDate() + interval);
 
-  var [nextTitle, nextUid] = roamsr.getRoamDate(nextDate);
+  var nextRoamDate = roamsr.getRoamDate(nextDate);
 
   // Create daily note if it doesn't exist yet
   await window.roamAlphaAPI.createPage({
     page: {
-      title: nextTitle
+      title: nextRoamDate.title
     }
   });
 
   await roamsr.sleep();
 
   // Query for the [[roam/sr/review]] block
-  var queryReviewBlock = window.roamAlphaAPI.q('[:find (pull ?reviewBlock [:block/uid]) :in $ ?dailyNoteUID :where [?reviewBlock :block/refs ?reviewPage] [?reviewPage :node/title "roam/sr/review"] [?dailyNote :block/children ?reviewBlock] [?dailyNote :block/uid ?dailyNoteUID]]', nextUid);
+  var queryReviewBlock = window.roamAlphaAPI.q('[:find (pull ?reviewBlock [:block/uid]) :in $ ?dailyNoteUID :where [?reviewBlock :block/refs ?reviewPage] [?reviewPage :node/title "roam/sr/review"] [?dailyNote :block/children ?reviewBlock] [?dailyNote :block/uid ?dailyNoteUID]]', nextRoamDate.uid);
 
   // Check if it's there; if not, create it
   var topLevelUid;
@@ -390,7 +429,7 @@ roamsr.scheduleCardIn = async (card, interval) => {
     topLevelUid = roamsr.createUid();
     await window.roamAlphaAPI.createBlock({
       location: {
-        "parent-uid": nextUid,
+        "parent-uid": nextRoamDate.uid,
         order: 0
       },
       block: {
@@ -419,23 +458,11 @@ roamsr.scheduleCardIn = async (card, interval) => {
   await roamsr.sleep();
 
   return {
-    date: nextUid,
+    date: nextRoamDate.uid,
     signal: null,
     uid: block.uid,
     string: block.string
   };
-};
-
-roamsr.flagCard = () => {
-  var card = roamsr.getCurrentCard();
-  window.roamAlphaAPI.updateBlock({
-    block: {
-      uid: card.uid,
-      string: card.string + " #" + roamsr.settings.flagTag
-    }
-  });
-  var j = roamsr.getCurrentCard().isNew ? 0 : 1;
-  roamsr.state.queue.push(roamsr.state.extraCards[j].shift()[0]);
 };
 
 roamsr.responseHandler = async (card, interval, signal) => {
@@ -457,13 +484,16 @@ roamsr.responseHandler = async (card, interval, signal) => {
   }
 
   // Record response
-  var last = hist[hist.length - 1];
+  var last = hist.pop();
+  last.string = last.string + " #[[r/" + signal + "]]";
+  last.signal = signal;
   await window.roamAlphaAPI.updateBlock({
     block: {
       uid: last.uid,
-      string: last.string + " #[[r/" + signal + "]]"
+      string: last.string
     }
   })
+  hist.push(last);
 
   // Schedule card to future
   var nextReview = await roamsr.scheduleCardIn(card, interval);
@@ -473,8 +503,21 @@ roamsr.responseHandler = async (card, interval, signal) => {
   if (interval == 0) {
     var newCard = card;
     newCard.history = hist;
-    roamsr.state.queue.push(newCard)
+    newCard.isNew = false;
+    roamsr.state.queue.push(newCard);
   }
+};
+
+roamsr.flagCard = () => {
+  var card = roamsr.getCurrentCard();
+  window.roamAlphaAPI.updateBlock({
+    block: {
+      uid: card.uid,
+      string: card.string + " #" + roamsr.settings.flagTag
+    }
+  });
+  var j = roamsr.getCurrentCard().isNew ? 0 : 1;
+  roamsr.state.queue.push(roamsr.state.extraCards[j].shift());
 };
 
 roamsr.stepToNext = () => {
@@ -501,7 +544,7 @@ roamsr.goToCurrentCard = async () => {
   await doStuff();
   window.onhashchange = doStuff;
 
-  await roamsr.sleep(200);
+  await roamsr.sleep(500);
 
   await doStuff();
 
@@ -644,7 +687,10 @@ roamsr.addContainer = () => {
     var flagButton = Object.assign(document.createElement("button"), {
       className: "bp3-button roamsr-flag-button",
       innerHTML: "Flag.",
-      onclick: () => { roamsr.flagCard(); roamsr.stepToNext(); }
+      onclick: async () => {
+        await roamsr.flagCard();
+        roamsr.stepToNext();
+      }
     });
     var skipButton = Object.assign(document.createElement("button"), {
       className: "bp3-button roamsr-skip-button",
@@ -700,7 +746,10 @@ roamsr.addResponseButtons = () => {
       id: "roamsr-response-" + res.signal,
       className: "bp3-button roamsr-container__response-area__response-button",
       innerHTML: res.responseText + "<sup>" + roamsr.getIntervalHumanReadable(res.interval) + "</sup>",
-      onclick: () => { roamsr.responseHandler(roamsr.getCurrentCard(), res.interval, res.signal); roamsr.stepToNext(); }
+      onclick: async () => {
+        await roamsr.responseHandler(roamsr.getCurrentCard(), res.interval, res.signal.toString());
+        roamsr.stepToNext();
+      }
     })
     responseButton.style.cssText = "margin: 5px;";
     responseArea.append(responseButton);
@@ -790,17 +839,19 @@ roamsr.addWidget = () => {
 
 /* ====== KEYBINDINGS ====== */
 roamsr.processKey = (e) => {
-  // console.log("alt: " + e.altKey + "  shift: " + e.shiftKey + "  ctrl: " + e.ctrlKey + "   code: " + e.code + "   key: " + e.key);
+  console.log("alt: " + e.altKey + "  shift: " + e.shiftKey + "  ctrl: " + e.ctrlKey + "   code: " + e.code + "   key: " + e.key);
   if (document.activeElement.type == "textarea" || !location.href.includes(roamsr.getCurrentCard().uid)) {
     return;
   }
 
   var responses = roamsr.getCurrentCard().algorithm(roamsr.getCurrentCard().history);
   var handleNthResponse = (n) => {
-    if (n > 0 && n < responses.length) {
+    console.log("Handling response: " + n)
+    if (n >= 0 && n < responses.length) {
       const res = responses[n];
-      roamsr.responseHandler(roamsr.getCurrentCard(), res.interval, res.signal);
-      roamsr.stepToNext();
+      roamsr.responseHandler(roamsr.getCurrentCard(), res.interval, res.signal.toString()).then(()=>{
+        roamsr.stepToNext();
+      });
     }
   }
 
@@ -825,8 +876,9 @@ roamsr.processKey = (e) => {
   }
 
   if (e.code == "KeyF") {
-    roamsr.flagCard();
-    roamsr.stepToNext();
+    roamsr.flagCard().then(() => {
+      roamsr.stepToNext();
+    });
     return;
   }
 
@@ -886,4 +938,4 @@ roamsr.loadState(-1).then(res => {
   roamsr.addWidget();
 });
 
-console.log("🗃️ Successfully loaded roam/sr " + VERSION + ".")
+console.log("🗃️ Successfully loaded roam/sr " + VERSION + ".");
