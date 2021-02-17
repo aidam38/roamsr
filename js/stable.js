@@ -388,7 +388,7 @@ roamsr.showAnswerAndCloze = (yes) => {
     .roam-article .rm-reference-main,
     .roam-article .rm-block-children
     {
-      display: none;  
+      visibility: hidden;  
     }
 
     .roam-article .rm-${clozeStyle} {
