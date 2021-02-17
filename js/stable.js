@@ -174,9 +174,11 @@ roamsr.loadCards = async (limits, dateBasis = new Date()) => {
       preferredDeck = roamsr.settings.customDecks.filter(customDeck => customDeck.tag == decks[decks.length - 1])[0];
     } else preferredDeck = roamsr.settings.defaultDeck;
 
-    if (!preferredDeck.algorithm || preferredDeck.algorithm === "anki") {
-      algorithm = roamsr.ankiScheduler(preferredDeck.config);
-    } else algorithm = preferredDeck.algorithm(preferredDeck.config);
+    let scheduler = preferredDeck.scheduler || preferredDeck.algorithm;
+    let config = preferredDeck.config;
+    if (!scheduler || scheduler === "anki") {
+      algorithm = roamsr.ankiScheduler(config);
+    } else algorithm = scheduler(config);
 
     return algorithm;
   };
