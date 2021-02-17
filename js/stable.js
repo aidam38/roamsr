@@ -239,7 +239,7 @@ roamsr.loadCards = async (limits, dateBasis = new Date()) => {
   });
 
   // Query for today's review
-  var todayUid = roamsr.getRoamDate()[1];
+  var todayUid = roamsr.getRoamDate().uid;
   var todayQuery = `[
     :find (pull ?card 
       [:block/uid 
@@ -383,17 +383,18 @@ roamsr.showAnswerAndCloze = (yes) => {
   if (element) element.remove();
 
   if (yes) {
+    var clozeStyle = roamsr.settings.clozeStyle || "highlight";
     var style = `
-  .roam-article .rm-reference-main,
-  .roam-article .rm-block-children
-  {
-    display: none;  
-  }
+    .roam-article .rm-reference-main,
+    .roam-article .rm-block-children
+    {
+      display: none;  
+    }
 
-  .roam-article .rm-block-ref {
-    background-color: #cccccc;
-    color: #cccccc;
-  }`
+    .roam-article .rm-${clozeStyle} {
+      background-color: #cccccc;
+      color: #cccccc;
+    }`
 
     var basicStyles = Object.assign(document.createElement("style"), {
       id: styleId,
@@ -563,6 +564,7 @@ roamsr.loadSettings = () => {
   roamsr.settings = {
     mainTag: "sr",
     flagTag: "f",
+    clozeStyle: "highlight", // "highlight" or "block-ref"
     defaultDeck: {
       algorithm: null,
       config: {},
@@ -580,6 +582,7 @@ roamsr.loadState = async (i) => {
     currentIndex: i,
   }
   roamsr.state.queue = await roamsr.loadCards();
+  return;
 };
 
 roamsr.getCurrentCard = () => {
@@ -639,7 +642,8 @@ roamsr.endSession = async () => {
   await doStuff();
   await roamsr.sleep(200);
   await doStuff(); // ... again to make sure
-  await roamsr.sleep(500);
+  await roamsr.sleep(1000);
+  await roamsr.loadState(-1);
   roamsr.updateCounters(); // ... once again
 };
 
