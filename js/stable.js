@@ -539,6 +539,10 @@ roamsr.goToCurrentCard = async () => {
     await roamsr.sleep(50);
     roamsr.addContainer();
     roamsr.addShowAnswerButton();
+    if (typeof window.roamsrUserSettings.onShowCard === "function") {
+      window.roamsrUserSettings.onShowCard(roamsr.getCurrentCard());
+      // TODO: receive signal from this function while the card is still active
+    }
   }
 
   await doStuff();
@@ -728,12 +732,21 @@ roamsr.addShowAnswerButton = () => {
   var showAnswerAndClozeButton = Object.assign(document.createElement("button"), {
     className: "bp3-button roamsr-container__response-area__show-answer-button",
     innerHTML: "Show answer.",
-    onclick: () => { roamsr.showAnswerAndCloze(false); roamsr.addResponseButtons(); }
+    onclick: roamsr.requestAnswer
   })
   showAnswerAndClozeButton.style.cssText = "margin: 5px;";
 
   responseArea.append(showAnswerAndClozeButton);
 };
+
+roamsr.requestAnswer = () => {
+  roamsr.showAnswerAndCloze(false);
+  roamsr.addResponseButtons(); 
+  if (typeof window.roamsrUserSettings.onShowAnswer === "function") {
+    window.roamsrUserSettings.onShowAnswer();
+    // TODO: receive signal from this function while the card is still active
+  }
+}
 
 roamsr.addResponseButtons = () => {
   var responseArea = roamsr.clearAndGetResponseArea();
@@ -871,7 +884,7 @@ roamsr.processKey = (e) => {
   }
 
   if (e.code == "Space") {
-    roamsr.showAnswerAndCloze(false); roamsr.addResponseButtons();
+    roamsr.requestAnswer();
     return;
   }
 
