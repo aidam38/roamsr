@@ -383,7 +383,7 @@ roamsr.setCustomStyle = (yes) => {
     );
 
     if (styleQuery && styleQuery.length != 0) {
-      var customStyle = styleQuery[0][0].string.replace("```css", "").replace("```", "");
+      var customStyle = styleQuery[0][0].string.replace("`"+"``css", "").replace("`"+"``", "");
 
       var roamsrCSS = Object.assign(document.createElement("style"), {
         id: styleId,
