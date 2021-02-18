@@ -27,7 +27,7 @@ roamsr.ankiScheduler = (userConfig) => {
   var algorithm = (history) => {
     var nextInterval;
     var lastFail = history ? history.map(review => review.signal).lastIndexOf("1") : 0;
-    history = history ? (lastFail == -1 ? history : history.slice(lastFail+1)) : [];
+    history = history ? (lastFail == -1 ? history : history.slice(lastFail + 1)) : [];
     // Check if in learning phase
     if (history.length == 0 || history.length <= config.firstFewIntervals.length) {
       return [{
@@ -174,9 +174,11 @@ roamsr.loadCards = async (limits, dateBasis = new Date()) => {
       preferredDeck = roamsr.settings.customDecks.filter(customDeck => customDeck.tag == decks[decks.length - 1])[0];
     } else preferredDeck = roamsr.settings.defaultDeck;
 
-    if (!preferredDeck.algorithm || preferredDeck.algorithm === "anki") {
-      algorithm = roamsr.ankiScheduler(preferredDeck.config);
-    } else algorithm = preferredDeck.algorithm(preferredDeck.config);
+    let scheduler = preferredDeck.scheduler || preferredDeck.algorithm;
+    let config = preferredDeck.config;
+    if (!scheduler || scheduler === "anki") {
+      algorithm = roamsr.ankiScheduler(config);
+    } else algorithm = scheduler(config);
 
     return algorithm;
   };
@@ -239,7 +241,7 @@ roamsr.loadCards = async (limits, dateBasis = new Date()) => {
   });
 
   // Query for today's review
-  var todayUid = roamsr.getRoamDate()[1];
+  var todayUid = roamsr.getRoamDate().uid;
   var todayQuery = `[
     :find (pull ?card 
       [:block/uid 
@@ -328,12 +330,15 @@ roamsr.addBasicStyles = () => {
   }
 
   .roamsr-container {
-    z-index: 10000;
     width: 100%;
     max-width: 600px;
     justify-content: center;
     align-items: center;
     padding: 5px 20px;
+  }
+
+  .roamsr-button {
+    z-index: 10000;
   }
 
   .roamsr-response-area {
@@ -383,17 +388,18 @@ roamsr.showAnswerAndCloze = (yes) => {
   if (element) element.remove();
 
   if (yes) {
+    var clozeStyle = roamsr.settings.clozeStyle || "highlight";
     var style = `
-  .roam-article .rm-reference-main,
-  .roam-article .rm-block-children
-  {
-    display: none;  
-  }
+    .roam-article .rm-reference-main,
+    .roam-article .rm-block-children
+    {
+      visibility: hidden;  
+    }
 
-  .roam-article .rm-block-ref {
-    background-color: #cccccc;
-    color: #cccccc;
-  }`
+    .roam-article .rm-${clozeStyle} {
+      background-color: #cccccc;
+      color: #cccccc;
+    }`
 
     var basicStyles = Object.assign(document.createElement("style"), {
       id: styleId,
@@ -520,7 +526,7 @@ roamsr.flagCard = () => {
   roamsr.state.queue.push(roamsr.state.extraCards[j].shift());
 };
 
-roamsr.stepToNext = () => {
+roamsr.stepToNext = async () => {
   if (roamsr.state.currentIndex + 1 >= roamsr.state.queue.length) {
     roamsr.endSession();
   } else {
@@ -563,6 +569,7 @@ roamsr.loadSettings = () => {
   roamsr.settings = {
     mainTag: "sr",
     flagTag: "f",
+    clozeStyle: "highlight", // "highlight" or "block-ref"
     defaultDeck: {
       algorithm: null,
       config: {},
@@ -580,6 +587,7 @@ roamsr.loadState = async (i) => {
     currentIndex: i,
   }
   roamsr.state.queue = await roamsr.loadCards();
+  return;
 };
 
 roamsr.getCurrentCard = () => {
@@ -625,19 +633,23 @@ roamsr.endSession = async () => {
 
   // Remove elements
   var doStuff = async () => {
-    await roamsr.loadState(-1);
     roamsr.removeContainer();
     roamsr.removeReturnButton();
     roamsr.setCustomStyle(false);
     roamsr.showAnswerAndCloze(false);
     roamsr.removeKeyListener();
-    roamsr.updateCounters();
     roamsr.goToUid();
+
+    await roamsr.loadState(-1);
+    roamsr.updateCounters();
   }
 
   await doStuff();
   await roamsr.sleep(200);
   await doStuff(); // ... again to make sure
+  await roamsr.sleep(1000);
+  await roamsr.loadState(-1);
+  roamsr.updateCounters(); // ... once again
 };
 
 /* ====== UI ELEMENTS ====== */
@@ -685,7 +697,7 @@ roamsr.addContainer = () => {
       className: "flex-h-box roamsr-flag-button-container"
     });
     var flagButton = Object.assign(document.createElement("button"), {
-      className: "bp3-button roamsr-flag-button",
+      className: "bp3-button roamsr-button",
       innerHTML: "Flag.",
       onclick: async () => {
         await roamsr.flagCard();
@@ -693,7 +705,7 @@ roamsr.addContainer = () => {
       }
     });
     var skipButton = Object.assign(document.createElement("button"), {
-      className: "bp3-button roamsr-skip-button",
+      className: "bp3-button roamsr-button",
       innerHTML: "Skip.",
       onclick: roamsr.stepToNext
     });
@@ -726,7 +738,7 @@ roamsr.addShowAnswerButton = () => {
   var responseArea = roamsr.clearAndGetResponseArea();
 
   var showAnswerAndClozeButton = Object.assign(document.createElement("button"), {
-    className: "bp3-button roamsr-container__response-area__show-answer-button",
+    className: "bp3-button roamsr-container__response-area__show-answer-button roamsr-button",
     innerHTML: "Show answer.",
     onclick: () => { roamsr.showAnswerAndCloze(false); roamsr.addResponseButtons(); }
   })
@@ -744,10 +756,14 @@ roamsr.addResponseButtons = () => {
     const res = response;
     var responseButton = Object.assign(document.createElement("button"), {
       id: "roamsr-response-" + res.signal,
-      className: "bp3-button roamsr-container__response-area__response-button",
+      className: "bp3-button roamsr-container__response-area__response-button roamsr-button",
       innerHTML: res.responseText + "<sup>" + roamsr.getIntervalHumanReadable(res.interval) + "</sup>",
       onclick: async () => {
-        await roamsr.responseHandler(roamsr.getCurrentCard(), res.interval, res.signal.toString());
+        if (res.interval != 0) {
+          roamsr.responseHandler(roamsr.getCurrentCard(), res.interval, res.signal.toString());
+        } else {
+          await roamsr.responseHandler(roamsr.getCurrentCard(), res.interval, res.signal.toString());
+        }
         roamsr.stepToNext();
       }
     })
@@ -845,60 +861,67 @@ roamsr.processKey = (e) => {
   }
 
   var responses = roamsr.getCurrentCard().algorithm(roamsr.getCurrentCard().history);
-  var handleNthResponse = (n) => {
+  var handleNthResponse = async (n) => {
     console.log("Handling response: " + n)
     if (n >= 0 && n < responses.length) {
       const res = responses[n];
-      roamsr.responseHandler(roamsr.getCurrentCard(), res.interval, res.signal.toString()).then(()=>{
-        roamsr.stepToNext();
-      });
+      if (res.interval != 0) {
+        roamsr.responseHandler(roamsr.getCurrentCard(), res.interval, res.signal.toString());
+      } else {
+        await roamsr.responseHandler(roamsr.getCurrentCard(), res.interval, res.signal.toString());
+      }
+      roamsr.stepToNext();
     }
   }
 
-  // Bindings for 123456789
-  if (e.code.includes("Digit")) {
-    var n = Math.min(parseInt(e.code.replace("Digit", "")) - 1, responses.length - 1);
-    handleNthResponse(n);
-    return;
-  }
+    // Bindings for 123456789
+    if (e.code.includes("Digit")) {
+      var n = Math.min(parseInt(e.code.replace("Digit", "")) - 1, responses.length - 1);
+      handleNthResponse(n);
+      return;
+    }
 
-  // Bindings for hjkl
-  const letters = ["KeyH", "KeyJ", "KeyK", "KeyL"];
-  if (letters.includes(e.code)) {
-    var n = Math.min(letters.indexOf(e.code), responses.length - 1);
-    handleNthResponse(n);
-    return;
-  }
+    // Bindings for hjkl
+    const letters = ["KeyH", "KeyJ", "KeyK", "KeyL"];
+    if (letters.includes(e.code)) {
+      var n = Math.min(letters.indexOf(e.code), responses.length - 1);
+      handleNthResponse(n);
+      return;
+    }
 
-  if (e.code == "Space") {
-    roamsr.showAnswerAndCloze(false); roamsr.addResponseButtons();
-    return;
-  }
+    if (e.code == "Space") {
+      roamsr.showAnswerAndCloze(false); roamsr.addResponseButtons();
+      return;
+    }
 
-  if (e.code == "KeyF") {
-    roamsr.flagCard().then(() => {
+    if (e.code == "KeyF") {
+      roamsr.flagCard().then(() => {
+        roamsr.stepToNext();
+      });
+      return;
+    }
+
+    if (e.code == "KeyS") {
       roamsr.stepToNext();
-    });
-    return;
-  }
+      return;
+    }
 
-  if (e.code == "KeyS") {
-    roamsr.stepToNext();
-    return;
-  }
-
-  if (e.code == "KeyD" && e.altKey) {
-    roamsr.endSession();
-    return;
-  }
+    if (e.code == "KeyD" && e.altKey) {
+      roamsr.endSession();
+      return;
+    }
 };
 
+roamsr.processKeyAlways = (e) => {
+  // Alt+enter TODO
+} 
+
 roamsr.addKeyListener = () => {
-  document.addEventListener("keydown", roamsr.processKey);
+    document.addEventListener("keydown", roamsr.processKey);
 };
 
 roamsr.removeKeyListener = () => {
-  document.removeEventListener("keydown", roamsr.processKey);
+    document.removeEventListener("keydown", roamsr.processKey);
 };
 
 /* ====== {{sr}} BUTTON ====== */
@@ -908,9 +931,9 @@ roamsr.buttonClickHandler = async (e) => {
     if (block) {
       var uid = block.id.substring(block.id.length - 9);
       const q = `[:find (pull ?page
-                     [{:block/children [:block/uid :block/string]}])
-                  :in $ ?uid
-                  :where [?page :block/uid ?uid]]`;
+                    [{:block/children [:block/uid :block/string]}])
+                :in $ ?uid
+                :where [?page :block/uid ?uid]]`;
       var results = await window.roamAlphaAPI.q(q, uid);
       if (results.length == 0) return;
       var children = results[0][0].children;
