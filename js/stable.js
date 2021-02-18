@@ -330,12 +330,15 @@ roamsr.addBasicStyles = () => {
   }
 
   .roamsr-container {
-    z-index: 10000;
     width: 100%;
     max-width: 600px;
     justify-content: center;
     align-items: center;
     padding: 5px 20px;
+  }
+
+  .roamsr-button {
+    z-index: 10000;
   }
 
   .roamsr-response-area {
@@ -694,7 +697,7 @@ roamsr.addContainer = () => {
       className: "flex-h-box roamsr-flag-button-container"
     });
     var flagButton = Object.assign(document.createElement("button"), {
-      className: "bp3-button roamsr-flag-button",
+      className: "bp3-button roamsr-button",
       innerHTML: "Flag.",
       onclick: async () => {
         await roamsr.flagCard();
@@ -702,7 +705,7 @@ roamsr.addContainer = () => {
       }
     });
     var skipButton = Object.assign(document.createElement("button"), {
-      className: "bp3-button roamsr-skip-button",
+      className: "bp3-button roamsr-button",
       innerHTML: "Skip.",
       onclick: roamsr.stepToNext
     });
@@ -735,7 +738,7 @@ roamsr.addShowAnswerButton = () => {
   var responseArea = roamsr.clearAndGetResponseArea();
 
   var showAnswerAndClozeButton = Object.assign(document.createElement("button"), {
-    className: "bp3-button roamsr-container__response-area__show-answer-button",
+    className: "bp3-button roamsr-container__response-area__show-answer-button roamsr-button",
     innerHTML: "Show answer.",
     onclick: () => { roamsr.showAnswerAndCloze(false); roamsr.addResponseButtons(); }
   })
@@ -753,7 +756,7 @@ roamsr.addResponseButtons = () => {
     const res = response;
     var responseButton = Object.assign(document.createElement("button"), {
       id: "roamsr-response-" + res.signal,
-      className: "bp3-button roamsr-container__response-area__response-button",
+      className: "bp3-button roamsr-container__response-area__response-button roamsr-button",
       innerHTML: res.responseText + "<sup>" + roamsr.getIntervalHumanReadable(res.interval) + "</sup>",
       onclick: async () => {
         if (res.interval != 0) {
@@ -907,51 +910,55 @@ roamsr.processKey = (e) => {
       roamsr.endSession();
       return;
     }
-  };
+};
 
-  roamsr.addKeyListener = () => {
+roamsr.processKeyAlways = (e) => {
+  // Alt+enter TODO
+} 
+
+roamsr.addKeyListener = () => {
     document.addEventListener("keydown", roamsr.processKey);
-  };
+};
 
-  roamsr.removeKeyListener = () => {
+roamsr.removeKeyListener = () => {
     document.removeEventListener("keydown", roamsr.processKey);
-  };
+};
 
-  /* ====== {{sr}} BUTTON ====== */
-  roamsr.buttonClickHandler = async (e) => {
-    if (e.target.tagName === 'BUTTON' && e.target.textContent === roamsr.settings.mainTag) {
-      var block = e.target.closest('.roam-block');
-      if (block) {
-        var uid = block.id.substring(block.id.length - 9);
-        const q = `[:find (pull ?page
-                     [{:block/children [:block/uid :block/string]}])
-                  :in $ ?uid
-                  :where [?page :block/uid ?uid]]`;
-        var results = await window.roamAlphaAPI.q(q, uid);
-        if (results.length == 0) return;
-        var children = results[0][0].children;
-        for (child of children) {
-          window.roamAlphaAPI.updateBlock({
-            block: {
-              uid: child.uid,
-              string: child.string.trim() + ' #' + roamsr.settings.mainTag
-            }
-          });
-        }
+/* ====== {{sr}} BUTTON ====== */
+roamsr.buttonClickHandler = async (e) => {
+  if (e.target.tagName === 'BUTTON' && e.target.textContent === roamsr.settings.mainTag) {
+    var block = e.target.closest('.roam-block');
+    if (block) {
+      var uid = block.id.substring(block.id.length - 9);
+      const q = `[:find (pull ?page
+                    [{:block/children [:block/uid :block/string]}])
+                :in $ ?uid
+                :where [?page :block/uid ?uid]]`;
+      var results = await window.roamAlphaAPI.q(q, uid);
+      if (results.length == 0) return;
+      var children = results[0][0].children;
+      for (child of children) {
+        window.roamAlphaAPI.updateBlock({
+          block: {
+            uid: child.uid,
+            string: child.string.trim() + ' #' + roamsr.settings.mainTag
+          }
+        });
       }
     }
   }
+}
 
-  document.addEventListener("click", roamsr.buttonClickHandler, false);
+document.addEventListener("click", roamsr.buttonClickHandler, false);
 
-  /* ====== CALLING FUNCTIONS DIRECTLY ====== */
+/* ====== CALLING FUNCTIONS DIRECTLY ====== */
 
-  console.log("🗃️ Loading roam/sr " + VERSION + ".");
+console.log("🗃️ Loading roam/sr " + VERSION + ".");
 
-  roamsr.loadSettings();
-  roamsr.addBasicStyles();
-  roamsr.loadState(-1).then(res => {
-    roamsr.addWidget();
-  });
+roamsr.loadSettings();
+roamsr.addBasicStyles();
+roamsr.loadState(-1).then(res => {
+  roamsr.addWidget();
+});
 
-  console.log("🗃️ Successfully loaded roam/sr " + VERSION + ".");
+console.log("🗃️ Successfully loaded roam/sr " + VERSION + ".");
