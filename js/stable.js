@@ -324,6 +324,7 @@ roamsr.addBasicStyles = () => {
   }
 
   .roamsr-wrapper {
+    pointer-events: none;
     position: relative;
     bottom: 180px;
     justify-content: center;
@@ -339,6 +340,7 @@ roamsr.addBasicStyles = () => {
 
   .roamsr-button {
     z-index: 10000;
+    pointer-events: all;
   }
 
   .roamsr-response-area {
