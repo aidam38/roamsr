@@ -60,7 +60,7 @@ roamsr.ankiScheduler = (userConfig) => {
       };
       var getDelay = (hist, prevInterval) => {
         if (hist && hist.length > 1)
-          return Math.max((new Date(hist[hist.length - 1].date) - new Date(hist[hist.length - 2].date)) / (1000 * 60 * 60 * 24) - prevInterval, 0);
+          return Math.max((hist[hist.length - 1].date - hist[hist.length - 2].date) / (1000 * 60 * 60 * 24) - prevInterval, 0);
         else return 0;
       };
       var recurAnki = (hist) => {
@@ -115,6 +115,17 @@ roamsr.goToUid = (uid) => {
   location.assign(url);
 };
 
+roamsr.getFuckingDate = (str) => {
+  if (!str) return null;
+  let strSplit = str.split("-");
+  if (strSplit.length != 3) return null;
+  try {
+    let date = new Date(strSplit[2] + "-" + strSplit[0] + "-" + strSplit[1]);
+    return date;
+  } catch (e) {
+    console.log(e);
+  }
+}
 roamsr.getRoamDate = (date) => {
   if (!date || date == 0) date = new Date();
 
@@ -185,7 +196,7 @@ roamsr.loadCards = async (limits, dateBasis = new Date()) => {
 
   var isNew = (res) => {
     return res._refs ? !res._refs.some(review => {
-      var reviewDate = new Date(review.page ? review.page.uid : null);
+      var reviewDate = new Date(roamsr.getFuckingDate(review.page.uid));
       reviewDate.setDate(reviewDate.getDate() + 1);
       return reviewDate < dateBasis;
     }) : true
@@ -197,13 +208,13 @@ roamsr.loadCards = async (limits, dateBasis = new Date()) => {
         .filter(ref => (ref._children && ref._children[0].refs) ? ref._children[0].refs.map(ref2 => ref2.title).includes("roam/sr/review") : false)
         .map(review => {
           return {
-            date: review.page ? review.page.uid : null,
+            date: roamsr.getFuckingDate(review.page.uid),
             signal: review.refs[0] ? review.refs[0].title.slice(2) : null,
             uid: review.uid,
             string: review.string
           }
         })
-        .sort((a, b) => new Date(a.date) - (new Date(b.date)))
+        .sort((a, b) => a.date - b.date)
     } else return []
   };
 
@@ -478,7 +489,7 @@ roamsr.responseHandler = async (card, interval, signal) => {
   var hist = card.history;
 
   // If new card, make it look like it was scheduled for today
-  if (hist.length == 0 || (hist[hist.length - 1] && new Date(hist[hist.length - 1].date) !== new Date())) {
+  if (hist.length == 0 || (hist[hist.length - 1] && hist[hist.length - 1].date !== new Date())) {
     var last = hist.pop();
     if (last) {
       await window.roamAlphaAPI.deleteBlock({
