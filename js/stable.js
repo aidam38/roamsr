@@ -539,10 +539,6 @@ roamsr.goToCurrentCard = async () => {
     await roamsr.sleep(50);
     roamsr.addContainer();
     roamsr.addShowAnswerButton();
-    if (typeof window.roamsrUserSettings.onShowCard === "function") {
-      window.roamsrUserSettings.onShowCard(roamsr.getCurrentCard());
-      // TODO: receive signal from this function while the card is still active
-    }
   }
 
   await doStuff();
@@ -551,6 +547,10 @@ roamsr.goToCurrentCard = async () => {
   await roamsr.sleep(500);
 
   await doStuff();
+  if (typeof window.roamsrUserSettings.onShowCard === "function") {
+    window.roamsrUserSettings.onShowCard(roamsr.getCurrentCard());
+    // TODO: receive signal from this function while the card is still active
+  }
 
   window.onhashchange = () => {
     roamsr.removeContainer();
