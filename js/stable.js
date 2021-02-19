@@ -1,10 +1,10 @@
 /* roam/sr - Spaced Repetition in Roam Research
    Author: Adam Krivka
-   v1.0.0
+   v1.0.1
    https://github.com/aidam38/roamsr
  */
 
-var VERSION = "v1.0.0";
+var VERSION = "v1.0.1";
 
 if (!window.roamsr) window.roamsr = {};
 
@@ -125,7 +125,8 @@ roamsr.getFuckingDate = (str) => {
   } catch (e) {
     console.log(e);
   }
-}
+};
+
 roamsr.getRoamDate = (date) => {
   if (!date || date == 0) date = new Date();
 
@@ -535,8 +536,11 @@ roamsr.flagCard = () => {
       string: card.string + " #" + roamsr.settings.flagTag
     }
   });
+  
   var j = roamsr.getCurrentCard().isNew ? 0 : 1;
-  roamsr.state.queue.push(roamsr.state.extraCards[j].shift());
+
+  var extraCard = roamsr.state.extraCards[j].shift();
+  if(extraCard) roamsr.state.queue.push(extraCard);
 };
 
 roamsr.stepToNext = async () => {
