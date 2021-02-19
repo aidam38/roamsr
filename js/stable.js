@@ -121,6 +121,7 @@ roamsr.getFuckingDate = (str) => {
   if (strSplit.length != 3) return null;
   try {
     let date = new Date(strSplit[2] + "-" + strSplit[0] + "-" + strSplit[1]);
+    date.setTime( date.getTime() + date.getTimezoneOffset()*60*1000 )
     return date;
   } catch (e) {
     console.log(e);
