@@ -29,6 +29,15 @@ const getLearningPhaseResponses = (config, history) => {
 	];
 };
 
+const getDelay = (hist, prevInterval) => {
+	if (hist && hist.length > 1)
+		return Math.max(
+			(hist[hist.length - 1].date - hist[hist.length - 2].date) / (1000 * 60 * 60 * 24) - prevInterval,
+			0
+		);
+	else return 0;
+};
+
 const getRetainingPhaseResponses = (config, history) => {
 	var calculateNewParams = (prevFactor, prevInterval, delay, signal) => {
 		var [newFactor, newInterval] = (() => {
@@ -47,14 +56,7 @@ const getRetainingPhaseResponses = (config, history) => {
 		})();
 		return [newFactor, Math.min(newInterval, config.maxInterval)];
 	};
-	var getDelay = (hist, prevInterval) => {
-		if (hist && hist.length > 1)
-			return Math.max(
-				(hist[hist.length - 1].date - hist[hist.length - 2].date) / (1000 * 60 * 60 * 24) - prevInterval,
-				0
-			);
-		else return 0;
-	};
+
 	var recurAnki = (hist) => {
 		if (!hist || hist.length <= config.firstFewIntervals.length) {
 			return [config.defaultFactor, config.firstFewIntervals[config.firstFewIntervals.length - 1]];
