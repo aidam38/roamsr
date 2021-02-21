@@ -88,7 +88,7 @@ export const exposeInternalAPI = () => {
 	/* ====== UI ELEMENTS ====== */
 
 	// COMMON
-	roamsr.getCounter = getCounter;
+	roamsr.getCounter = (deck) => getCounter(roamsr.state, deck);
 
 	roamsr.updateCounters = () => updateCounters(roamsr.state);
 

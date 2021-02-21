@@ -5,11 +5,11 @@ import { getCurrentCard, startSession } from "./sessions";
 import { showAnswerAndCloze } from "./styles";
 
 // COMMON
-export const getCounter = (deck) => {
+export const getCounter = (state, deck) => {
 	// Getting the number of new cards
 	var cardCount = [0, 0];
-	if (roamsr.state.queue) {
-		var remainingQueue = roamsr.state.queue.slice(Math.max(roamsr.state.currentIndex, 0));
+	if (state.queue) {
+		var remainingQueue = state.queue.slice(Math.max(state.currentIndex, 0));
 		var filteredQueue = !deck ? remainingQueue : remainingQueue.filter((card) => card.decks.includes(deck));
 		cardCount = filteredQueue.reduce(
 			(a, card) => {
@@ -36,7 +36,7 @@ export const getCounter = (deck) => {
 
 export const updateCounters = (state) => {
 	document.querySelectorAll(".roamsr-counter").forEach((counter) => {
-		counter.innerHTML = getCounter().innerHTML;
+		counter.innerHTML = getCounter(state).innerHTML;
 		counter.style.cssText = !state.limits ? "font-style: italic;" : "font-style: inherit;";
 	});
 };
@@ -74,7 +74,7 @@ export const addContainer = () => {
 			className: "flex-h-box roamsr-container__response-area",
 		});
 
-		container.append(getCounter(), responseArea, flagButtonContainer);
+		container.append(getCounter(roamsr.state), responseArea, flagButtonContainer);
 		wrapper.append(container);
 
 		var bodyDiv = document.querySelector(".roam-body-main");
@@ -177,7 +177,7 @@ export const createWidget = () => {
 	});
 	reviewButton.style.cssText = "padding: 2px 8px;";
 
-	var counter = Object.assign(getCounter(), {
+	var counter = Object.assign(getCounter(roamsr.state), {
 		className: "bp3-button bp3-minimal roamsr-counter",
 		onclick: async () => {
 			roamsr.state.limits = !roamsr.state.limits;
