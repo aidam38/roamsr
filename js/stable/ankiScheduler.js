@@ -61,23 +61,23 @@ const calculateNewParamsForRetainingPhase = (config, prevFactor, prevInterval, d
 	return [newFactor, Math.min(newInterval, config.maxInterval)];
 };
 
-const getRetainingPhaseResponses = (config, history) => {
-	var recurAnki = (hist) => {
-		if (!hist || hist.length <= config.firstFewIntervals.length) {
-			return [config.defaultFactor, config.firstFewIntervals[config.firstFewIntervals.length - 1]];
-		} else {
-			var [prevFactor, prevInterval] = recurAnki(hist.slice(0, -1));
-			return calculateNewParamsForRetainingPhase(
-				config,
-				prevFactor,
-				prevInterval,
-				getDelay(hist, prevInterval),
-				hist[hist.length - 1].signal
-			);
-		}
-	};
+const recurAnki = (config, history) => {
+	if (!history || history.length <= config.firstFewIntervals.length) {
+		return [config.defaultFactor, config.firstFewIntervals[config.firstFewIntervals.length - 1]];
+	} else {
+		var [prevFactor, prevInterval] = recurAnki(config, history.slice(0, -1));
+		return calculateNewParamsForRetainingPhase(
+			config,
+			prevFactor,
+			prevInterval,
+			getDelay(history, prevInterval),
+			history[history.length - 1].signal
+		);
+	}
+};
 
-	var [finalFactor, finalInterval] = recurAnki(history.slice(0, -1));
+const getRetainingPhaseResponses = (config, history) => {
+	var [finalFactor, finalInterval] = recurAnki(config, history.slice(0, -1));
 
 	var getResponse = (signal) => {
 		return {
