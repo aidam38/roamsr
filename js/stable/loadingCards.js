@@ -1,15 +1,16 @@
 import { ankiScheduler } from "./ankiScheduler";
 import { getFuckingDate, getRoamDate } from "./helperFunctions";
 
+const recurDeck = (part) => {
+	var result = [];
+	if (part.refs) result.push(...part.refs);
+	if (part._children && part._children.length > 0) result.push(...recurDeck(part._children[0]));
+	return result;
+};
+
 export const loadCards = async (limits, dateBasis = new Date()) => {
 	// Common functions
 	var getDecks = (res) => {
-		let recurDeck = (part) => {
-			var result = [];
-			if (part.refs) result.push(...part.refs);
-			if (part._children && part._children.length > 0) result.push(...recurDeck(part._children[0]));
-			return result;
-		};
 		var possibleDecks = recurDeck(res).map((deck) => deck.title);
 		return possibleDecks.filter((deckTag) =>
 			roamsr.settings.customDecks.map((customDeck) => customDeck.tag).includes(deckTag)
