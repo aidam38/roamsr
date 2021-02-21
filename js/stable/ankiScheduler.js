@@ -10,12 +10,14 @@ const defaultConfig = {
 	responseTexts: ["Again.", "Hard.", "Good.", "Easy."],
 };
 
+const getLastFail = (history) => (history ? history.map((review) => review.signal).lastIndexOf("1") : 0);
+
 export const ankiScheduler = (userConfig) => {
 	const config = Object.assign(defaultConfig, userConfig);
 
 	var algorithm = (history) => {
 		var nextInterval;
-		var lastFail = history ? history.map((review) => review.signal).lastIndexOf("1") : 0;
+		var lastFail = getLastFail(history);
 		history = history ? (lastFail == -1 ? history : history.slice(lastFail + 1)) : [];
 		// Check if in learning phase
 		if (history.length == 0 || history.length <= config.firstFewIntervals.length) {
