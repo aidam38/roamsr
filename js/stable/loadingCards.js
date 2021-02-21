@@ -31,17 +31,17 @@ const getAlgorithm = (res, settings) => {
 	return algorithm;
 };
 
-export const loadCards = async (limits, dateBasis = new Date()) => {
-	var isNew = (res) => {
-		return res._refs
-			? !res._refs.some((review) => {
-					var reviewDate = new Date(getFuckingDate(review.page.uid));
-					reviewDate.setDate(reviewDate.getDate() + 1);
-					return reviewDate < dateBasis;
-			  })
-			: true;
-	};
+const isNew = (res, dateBasis) => {
+	return res._refs
+		? !res._refs.some((review) => {
+				var reviewDate = new Date(getFuckingDate(review.page.uid));
+				reviewDate.setDate(reviewDate.getDate() + 1);
+				return reviewDate < dateBasis;
+		  })
+		: true;
+};
 
+export const loadCards = async (limits, dateBasis = new Date()) => {
 	var getHistory = (res) => {
 		if (res._refs) {
 			return res._refs
@@ -86,7 +86,7 @@ export const loadCards = async (limits, dateBasis = new Date()) => {
 		let res = result[0];
 		let card = {
 			uid: res.uid,
-			isNew: isNew(res),
+			isNew: isNew(res, dateBasis),
 			decks: getDecks(res, roamsr.settings),
 			algorithm: getAlgorithm(res, roamsr.settings),
 			string: res.string,
@@ -119,7 +119,7 @@ export const loadCards = async (limits, dateBasis = new Date()) => {
 		.map((result) => {
 			let card = {
 				uid: result[0].uid,
-				isNew: isNew(result[0]),
+				isNew: isNew(result[0], dateBasis),
 				decks: getDecks(result[0], roamsr.settings),
 			};
 			return card;
