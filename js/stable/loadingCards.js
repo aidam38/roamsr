@@ -13,27 +13,25 @@ const getDecks = (res, settings) => {
 	return possibleDecks.filter((deckTag) => settings.customDecks.map((customDeck) => customDeck.tag).includes(deckTag));
 };
 
+const getAlgorithm = (res, settings) => {
+	let decks = getDecks(res, settings);
+	let preferredDeck;
+	let algorithm;
+
+	if (decks && decks.length > 0) {
+		preferredDeck = settings.customDecks.filter((customDeck) => customDeck.tag == decks[decks.length - 1])[0];
+	} else preferredDeck = settings.defaultDeck;
+
+	let scheduler = preferredDeck.scheduler || preferredDeck.algorithm;
+	let config = preferredDeck.config;
+	if (!scheduler || scheduler === "anki") {
+		algorithm = ankiScheduler(config);
+	} else algorithm = scheduler(config);
+
+	return algorithm;
+};
+
 export const loadCards = async (limits, dateBasis = new Date()) => {
-	// Common functions
-
-	var getAlgorithm = (res) => {
-		let decks = getDecks(res, roamsr.settings);
-		let preferredDeck;
-		let algorithm;
-
-		if (decks && decks.length > 0) {
-			preferredDeck = roamsr.settings.customDecks.filter((customDeck) => customDeck.tag == decks[decks.length - 1])[0];
-		} else preferredDeck = roamsr.settings.defaultDeck;
-
-		let scheduler = preferredDeck.scheduler || preferredDeck.algorithm;
-		let config = preferredDeck.config;
-		if (!scheduler || scheduler === "anki") {
-			algorithm = ankiScheduler(config);
-		} else algorithm = scheduler(config);
-
-		return algorithm;
-	};
-
 	var isNew = (res) => {
 		return res._refs
 			? !res._refs.some((review) => {
@@ -90,7 +88,7 @@ export const loadCards = async (limits, dateBasis = new Date()) => {
 			uid: res.uid,
 			isNew: isNew(res),
 			decks: getDecks(res, roamsr.settings),
-			algorithm: getAlgorithm(res),
+			algorithm: getAlgorithm(res, roamsr.settings),
 			string: res.string,
 			history: getHistory(res),
 		};
