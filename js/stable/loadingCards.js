@@ -61,9 +61,7 @@ const getHistory = (res) => {
 	} else return [];
 };
 
-export const loadCards = async (limits, dateBasis = new Date()) => {
-	// Query for all cards and their history
-	var mainQuery = `[
+const getMainQuery = (settings) => `[
     :find (pull ?card [
       :block/string 
       :block/uid 
@@ -73,14 +71,18 @@ export const loadCards = async (limits, dateBasis = new Date()) => {
     ])
     :where 
       [?card :block/refs ?srPage] 
-      [?srPage :node/title "${roamsr.settings.mainTag}"] 
+      [?srPage :node/title "${settings.mainTag}"] 
       (not-join [?card] 
         [?card :block/refs ?flagPage] 
-        [?flagPage :node/title "${roamsr.settings.flagTag}"])
+        [?flagPage :node/title "${settings.flagTag}"])
       (not-join [?card] 
         [?card :block/refs ?queryPage] 
         [?queryPage :node/title "query"])
     ]`;
+
+export const loadCards = async (limits, dateBasis = new Date()) => {
+	// Query for all cards and their history
+	var mainQuery = getMainQuery(roamsr.settings);
 	var mainQueryResult = await window.roamAlphaAPI.q(mainQuery);
 	var cards = mainQueryResult.map((result) => {
 		let res = result[0];
