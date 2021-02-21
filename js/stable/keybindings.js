@@ -1,20 +1,25 @@
+import { flagCard, responseHandler, stepToNext } from "./mainFunctions";
+import { endSession, getCurrentCard } from "./sessions";
+import { showAnswerAndCloze } from "./styles";
+import { addResponseButtons } from "./uiElements";
+
 export const processKey = (e) => {
 	// console.log("alt: " + e.altKey + "  shift: " + e.shiftKey + "  ctrl: " + e.ctrlKey + "   code: " + e.code + "   key: " + e.key);
-	if (document.activeElement.type == "textarea" || !location.href.includes(roamsr.getCurrentCard().uid)) {
+	if (document.activeElement.type == "textarea" || !location.href.includes(getCurrentCard().uid)) {
 		return;
 	}
 
-	var responses = roamsr.getCurrentCard().algorithm(roamsr.getCurrentCard().history);
+	var responses = getCurrentCard().algorithm(getCurrentCard().history);
 	var handleNthResponse = async (n) => {
 		console.log("Handling response: " + n);
 		if (n >= 0 && n < responses.length) {
 			const res = responses[n];
 			if (res.interval != 0) {
-				roamsr.responseHandler(roamsr.getCurrentCard(), res.interval, res.signal.toString());
+				responseHandler(getCurrentCard(), res.interval, res.signal.toString());
 			} else {
-				await roamsr.responseHandler(roamsr.getCurrentCard(), res.interval, res.signal.toString());
+				await responseHandler(getCurrentCard(), res.interval, res.signal.toString());
 			}
-			roamsr.stepToNext();
+			stepToNext();
 		}
 	};
 
@@ -34,25 +39,26 @@ export const processKey = (e) => {
 	}
 
 	if (e.code == "Space") {
-		roamsr.showAnswerAndCloze(false);
-		roamsr.addResponseButtons();
+		showAnswerAndCloze(false);
+		addResponseButtons();
 		return;
 	}
 
 	if (e.code == "KeyF") {
-		roamsr.flagCard().then(() => {
-			roamsr.stepToNext();
+		// TODO: bug flagCard returns void!
+		flagCard().then(() => {
+			stepToNext();
 		});
 		return;
 	}
 
 	if (e.code == "KeyS") {
-		roamsr.stepToNext();
+		stepToNext();
 		return;
 	}
 
 	if (e.code == "KeyD" && e.altKey) {
-		roamsr.endSession();
+		endSession();
 		return;
 	}
 };
@@ -62,9 +68,9 @@ export const processKeyAlways = (e) => {
 };
 
 export const addKeyListener = () => {
-	document.addEventListener("keydown", roamsr.processKey);
+	document.addEventListener("keydown", processKey);
 };
 
 export const removeKeyListener = () => {
-	document.removeEventListener("keydown", roamsr.processKey);
+	document.removeEventListener("keydown", processKey);
 };

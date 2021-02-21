@@ -1,8 +1,20 @@
+import { getRoamDate, sleep, createUid, goToUid } from "./helperFunctions";
+import { getCurrentCard, endSession } from "./sessions";
+import { showAnswerAndCloze } from "./styles";
+import {
+	updateCounters,
+	removeReturnButton,
+	addContainer,
+	addShowAnswerButton,
+	removeContainer,
+	addReturnButton,
+} from "./uiElements";
+
 export const scheduleCardIn = async (card, interval) => {
 	var nextDate = new Date();
 	nextDate.setDate(nextDate.getDate() + interval);
 
-	var nextRoamDate = roamsr.getRoamDate(nextDate);
+	var nextRoamDate = getRoamDate(nextDate);
 
 	// Create daily note if it doesn't exist yet
 	await window.roamAlphaAPI.createPage({
@@ -11,7 +23,7 @@ export const scheduleCardIn = async (card, interval) => {
 		},
 	});
 
-	await roamsr.sleep();
+	await sleep();
 
 	// Query for the [[roam/sr/review]] block
 	var queryReviewBlock = window.roamAlphaAPI.q(
@@ -22,7 +34,7 @@ export const scheduleCardIn = async (card, interval) => {
 	// Check if it's there; if not, create it
 	var topLevelUid;
 	if (queryReviewBlock.length == 0) {
-		topLevelUid = roamsr.createUid();
+		topLevelUid = createUid();
 		await window.roamAlphaAPI.createBlock({
 			location: {
 				"parent-uid": nextRoamDate.uid,
@@ -33,14 +45,14 @@ export const scheduleCardIn = async (card, interval) => {
 				uid: topLevelUid,
 			},
 		});
-		await roamsr.sleep();
+		await sleep();
 	} else {
 		topLevelUid = queryReviewBlock[0][0].uid;
 	}
 
 	// Generate the block
 	var block = {
-		uid: roamsr.createUid(),
+		uid: createUid(),
 		string: "((" + card.uid + "))",
 	};
 	// Finally, schedule the card
@@ -51,7 +63,7 @@ export const scheduleCardIn = async (card, interval) => {
 		},
 		block: block,
 	});
-	await roamsr.sleep();
+	await sleep();
 
 	return {
 		date: nextRoamDate.uid,
@@ -75,7 +87,7 @@ export const responseHandler = async (card, interval, signal) => {
 				},
 			});
 		}
-		var todayReviewBlock = await roamsr.scheduleCardIn(card, 0);
+		var todayReviewBlock = await scheduleCardIn(card, 0);
 		hist.push(todayReviewBlock);
 	}
 
@@ -92,7 +104,7 @@ export const responseHandler = async (card, interval, signal) => {
 	hist.push(last);
 
 	// Schedule card to future
-	var nextReview = await roamsr.scheduleCardIn(card, interval);
+	var nextReview = await scheduleCardIn(card, interval);
 	hist.push(nextReview);
 
 	// If it's scheduled for today, add it to the end of the queue
@@ -105,7 +117,7 @@ export const responseHandler = async (card, interval, signal) => {
 };
 
 export const flagCard = () => {
-	var card = roamsr.getCurrentCard();
+	var card = getCurrentCard();
 	window.roamAlphaAPI.updateBlock({
 		block: {
 			uid: card.uid,
@@ -113,7 +125,7 @@ export const flagCard = () => {
 		},
 	});
 
-	var j = roamsr.getCurrentCard().isNew ? 0 : 1;
+	var j = getCurrentCard().isNew ? 0 : 1;
 
 	var extraCard = roamsr.state.extraCards[j].shift();
 	if (extraCard) roamsr.state.queue.push(extraCard);
@@ -121,36 +133,36 @@ export const flagCard = () => {
 
 export const stepToNext = async () => {
 	if (roamsr.state.currentIndex + 1 >= roamsr.state.queue.length) {
-		roamsr.endSession();
+		endSession();
 	} else {
 		roamsr.state.currentIndex++;
-		roamsr.goToCurrentCard();
+		goToCurrentCard();
 	}
-	roamsr.updateCounters();
+	updateCounters();
 };
 
 export const goToCurrentCard = async () => {
 	window.onhashchange = () => {};
-	roamsr.showAnswerAndCloze(true);
-	roamsr.removeReturnButton();
+	showAnswerAndCloze(true);
+	removeReturnButton();
 	var doStuff = async () => {
-		roamsr.goToUid(roamsr.getCurrentCard().uid);
-		await roamsr.sleep(50);
-		roamsr.addContainer();
-		roamsr.addShowAnswerButton();
+		goToUid(getCurrentCard().uid);
+		await sleep(50);
+		addContainer();
+		addShowAnswerButton();
 	};
 
 	await doStuff();
 	window.onhashchange = doStuff;
 
-	await roamsr.sleep(500);
+	await sleep(500);
 
 	await doStuff();
 
 	window.onhashchange = () => {
-		roamsr.removeContainer();
-		roamsr.addReturnButton();
-		roamsr.showAnswerAndCloze(false);
+		removeContainer();
+		addReturnButton();
+		showAnswerAndCloze(false);
 		window.onhashchange = () => {};
 	};
 };

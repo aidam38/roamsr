@@ -1,3 +1,9 @@
+import { removeSelector, getIntervalHumanReadable } from "./helperFunctions";
+import { loadCards } from "./loadingCards";
+import { flagCard, stepToNext, responseHandler, goToCurrentCard } from "./mainFunctions";
+import { getCurrentCard, startSession } from "./sessions";
+import { showAnswerAndCloze } from "./styles";
+
 // COMMON
 export const getCounter = (deck) => {
 	// Getting the number of new cards
@@ -30,7 +36,7 @@ export const getCounter = (deck) => {
 
 export const updateCounters = () => {
 	var counter = document.querySelectorAll(".roamsr-counter").forEach((counter) => {
-		counter.innerHTML = roamsr.getCounter().innerHTML;
+		counter.innerHTML = getCounter().innerHTML;
 		counter.style.cssText = !roamsr.state.limits ? "font-style: italic;" : "font-style: inherit;";
 	});
 };
@@ -52,14 +58,14 @@ export const addContainer = () => {
 			className: "bp3-button roamsr-button",
 			innerHTML: "Flag.",
 			onclick: async () => {
-				await roamsr.flagCard();
-				roamsr.stepToNext();
+				await flagCard();
+				stepToNext();
 			},
 		});
 		var skipButton = Object.assign(document.createElement("button"), {
 			className: "bp3-button roamsr-button",
 			innerHTML: "Skip.",
-			onclick: roamsr.stepToNext,
+			onclick: stepToNext,
 		});
 		flagButtonContainer.style.cssText = "justify-content: space-between;";
 		flagButtonContainer.append(flagButton, skipButton);
@@ -68,7 +74,7 @@ export const addContainer = () => {
 			className: "flex-h-box roamsr-container__response-area",
 		});
 
-		container.append(roamsr.getCounter(), responseArea, flagButtonContainer);
+		container.append(getCounter(), responseArea, flagButtonContainer);
 		wrapper.append(container);
 
 		var bodyDiv = document.querySelector(".roam-body-main");
@@ -77,7 +83,7 @@ export const addContainer = () => {
 };
 
 export const removeContainer = () => {
-	roamsr.removeSelector(".roamsr-wrapper");
+	removeSelector(".roamsr-wrapper");
 };
 
 export const clearAndGetResponseArea = () => {
@@ -87,14 +93,14 @@ export const clearAndGetResponseArea = () => {
 };
 
 export const addShowAnswerButton = () => {
-	var responseArea = roamsr.clearAndGetResponseArea();
+	var responseArea = clearAndGetResponseArea();
 
 	var showAnswerAndClozeButton = Object.assign(document.createElement("button"), {
 		className: "bp3-button roamsr-container__response-area__show-answer-button roamsr-button",
 		innerHTML: "Show answer.",
 		onclick: () => {
-			roamsr.showAnswerAndCloze(false);
-			roamsr.addResponseButtons();
+			showAnswerAndCloze(false);
+			addResponseButtons();
 		},
 	});
 	showAnswerAndClozeButton.style.cssText = "margin: 5px;";
@@ -103,23 +109,23 @@ export const addShowAnswerButton = () => {
 };
 
 export const addResponseButtons = () => {
-	var responseArea = roamsr.clearAndGetResponseArea();
+	var responseArea = clearAndGetResponseArea();
 
 	// Add new responses
-	var responses = roamsr.getCurrentCard().algorithm(roamsr.getCurrentCard().history);
-	for (response of responses) {
+	var responses = getCurrentCard().algorithm(getCurrentCard().history);
+	for (let response of responses) {
 		const res = response;
 		var responseButton = Object.assign(document.createElement("button"), {
 			id: "roamsr-response-" + res.signal,
 			className: "bp3-button roamsr-container__response-area__response-button roamsr-button",
-			innerHTML: res.responseText + "<sup>" + roamsr.getIntervalHumanReadable(res.interval) + "</sup>",
+			innerHTML: res.responseText + "<sup>" + getIntervalHumanReadable(res.interval) + "</sup>",
 			onclick: async () => {
 				if (res.interval != 0) {
-					roamsr.responseHandler(roamsr.getCurrentCard(), res.interval, res.signal.toString());
+					responseHandler(getCurrentCard(), res.interval, res.signal.toString());
 				} else {
-					await roamsr.responseHandler(roamsr.getCurrentCard(), res.interval, res.signal.toString());
+					await responseHandler(getCurrentCard(), res.interval, res.signal.toString());
 				}
-				roamsr.stepToNext();
+				stepToNext();
 			},
 		});
 		responseButton.style.cssText = "margin: 5px;";
@@ -140,14 +146,14 @@ export const addReturnButton = () => {
 	var returnButton = Object.assign(document.createElement("button"), {
 		className: "bp3-button bp3-large roamsr-return-button",
 		innerText: "Return.",
-		onclick: roamsr.goToCurrentCard,
+		onclick: goToCurrentCard,
 	});
 	returnButtonContainer.append(returnButton);
 	main.insertBefore(returnButtonContainer, body);
 };
 
 export const removeReturnButton = () => {
-	roamsr.removeSelector(".roamsr-return-button-container");
+	removeSelector(".roamsr-return-button-container");
 };
 
 // SIDEBAR WIDGET
@@ -167,16 +173,16 @@ export const createWidget = () => {
     </g>
   </g></svg></span> REVIEW`,
 		//  <span class="bp3-icon bp3-icon-chevron-down expand-icon"></span>`
-		onclick: roamsr.startSession,
+		onclick: startSession,
 	});
 	reviewButton.style.cssText = "padding: 2px 8px;";
 
-	var counter = Object.assign(roamsr.getCounter(), {
+	var counter = Object.assign(getCounter(), {
 		className: "bp3-button bp3-minimal roamsr-counter",
 		onclick: async () => {
 			roamsr.state.limits = !roamsr.state.limits;
-			roamsr.state.queue = await roamsr.loadCards();
-			roamsr.updateCounters();
+			roamsr.state.queue = await loadCards();
+			updateCounters();
 		},
 	});
 	var counterContainer = Object.assign(document.createElement("div"), {
@@ -192,13 +198,13 @@ export const createWidget = () => {
 
 export const addWidget = () => {
 	if (!document.querySelector(".roamsr-widget")) {
-		roamsr.removeSelector(".roamsr-widget-delimiter");
+		removeSelector(".roamsr-widget-delimiter");
 		var delimiter = Object.assign(document.createElement("div"), {
 			className: "roamsr-widget-delimiter",
 		});
 		delimiter.style.cssText = "flex: 0 0 1px; background-color: rgb(57, 75, 89); margin: 8px 20px;";
 
-		var widget = roamsr.createWidget();
+		var widget = createWidget();
 
 		var sidebar = document.querySelector(".roam-sidebar-content");
 		var starredPages = document.querySelector(".starred-pages-wrapper");

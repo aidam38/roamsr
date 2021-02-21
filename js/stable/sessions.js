@@ -1,3 +1,10 @@
+import { removeSelector, goToUid, sleep } from "./helperFunctions";
+import { addKeyListener, removeKeyListener } from "./keybindings";
+import { loadCards } from "./loadingCards";
+import { goToCurrentCard } from "./mainFunctions";
+import { setCustomStyle, showAnswerAndCloze } from "./styles";
+import { addWidget, removeContainer, removeReturnButton, updateCounters } from "./uiElements";
+
 export const loadSettings = () => {
 	// Default settings
 	roamsr.settings = {
@@ -20,7 +27,7 @@ export const loadState = async (i) => {
 		limits: true,
 		currentIndex: i,
 	};
-	roamsr.state.queue = await roamsr.loadCards();
+	roamsr.state.queue = await loadCards();
 	return;
 };
 
@@ -33,27 +40,27 @@ export const startSession = async () => {
 	if (roamsr.state && roamsr.state.queue.length > 0) {
 		console.log("Starting session.");
 
-		roamsr.setCustomStyle(true);
+		setCustomStyle(true);
 
 		// Hide left sidebar
 		try {
 			document.getElementsByClassName("bp3-icon-menu-closed")[0].click();
 		} catch (e) {}
 
-		roamsr.loadSettings();
-		await roamsr.loadState(0);
+		loadSettings();
+		await loadState(0);
 
 		console.log("The queue: ");
 		console.log(roamsr.state.queue);
 
-		await roamsr.goToCurrentCard();
+		await goToCurrentCard();
 
-		roamsr.addKeyListener();
+		addKeyListener();
 
 		// Change widget
 		var widget = document.querySelector(".roamsr-widget");
 		widget.innerHTML = "<div style='padding: 5px 0px'><span class='bp3-icon bp3-icon-cross'></span> END SESSION</div>";
-		widget.onclick = roamsr.endSession;
+		widget.onclick = endSession;
 	}
 };
 
@@ -62,26 +69,26 @@ export const endSession = async () => {
 	console.log("Ending sesion.");
 
 	// Change widget
-	roamsr.removeSelector(".roamsr-widget");
-	roamsr.addWidget();
+	removeSelector(".roamsr-widget");
+	addWidget();
 
 	// Remove elements
 	var doStuff = async () => {
-		roamsr.removeContainer();
-		roamsr.removeReturnButton();
-		roamsr.setCustomStyle(false);
-		roamsr.showAnswerAndCloze(false);
-		roamsr.removeKeyListener();
-		roamsr.goToUid();
+		removeContainer();
+		removeReturnButton();
+		setCustomStyle(false);
+		showAnswerAndCloze(false);
+		removeKeyListener();
+		goToUid();
 
-		await roamsr.loadState(-1);
-		roamsr.updateCounters();
+		await loadState(-1);
+		updateCounters();
 	};
 
 	await doStuff();
-	await roamsr.sleep(200);
+	await sleep(200);
 	await doStuff(); // ... again to make sure
-	await roamsr.sleep(1000);
-	await roamsr.loadState(-1);
-	roamsr.updateCounters(); // ... once again
+	await sleep(1000);
+	await loadState(-1);
+	updateCounters(); // ... once again
 };

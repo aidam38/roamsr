@@ -1,3 +1,6 @@
+import { ankiScheduler } from "./ankiScheduler";
+import { getFuckingDate, getRoamDate } from "./helperFunctions";
+
 export const loadCards = async (limits, dateBasis = new Date()) => {
 	// Common functions
 	var getDecks = (res) => {
@@ -25,7 +28,7 @@ export const loadCards = async (limits, dateBasis = new Date()) => {
 		let scheduler = preferredDeck.scheduler || preferredDeck.algorithm;
 		let config = preferredDeck.config;
 		if (!scheduler || scheduler === "anki") {
-			algorithm = roamsr.ankiScheduler(config);
+			algorithm = ankiScheduler(config);
 		} else algorithm = scheduler(config);
 
 		return algorithm;
@@ -34,7 +37,7 @@ export const loadCards = async (limits, dateBasis = new Date()) => {
 	var isNew = (res) => {
 		return res._refs
 			? !res._refs.some((review) => {
-					var reviewDate = new Date(roamsr.getFuckingDate(review.page.uid));
+					var reviewDate = new Date(getFuckingDate(review.page.uid));
 					reviewDate.setDate(reviewDate.getDate() + 1);
 					return reviewDate < dateBasis;
 			  })
@@ -51,7 +54,7 @@ export const loadCards = async (limits, dateBasis = new Date()) => {
 				)
 				.map((review) => {
 					return {
-						date: roamsr.getFuckingDate(review.page.uid),
+						date: getFuckingDate(review.page.uid),
 						signal: review.refs[0] ? review.refs[0].title.slice(2) : null,
 						uid: review.uid,
 						string: review.string,
@@ -95,7 +98,7 @@ export const loadCards = async (limits, dateBasis = new Date()) => {
 	});
 
 	// Query for today's review
-	var todayUid = roamsr.getRoamDate().uid;
+	var todayUid = getRoamDate().uid;
 	var todayQuery = `[
     :find (pull ?card 
       [:block/uid 
@@ -136,7 +139,7 @@ export const loadCards = async (limits, dateBasis = new Date()) => {
 	// Filter out cards over limit
 	roamsr.state.extraCards = [[], []];
 	if (roamsr.state.limits) {
-		for (deck of roamsr.settings.customDecks.concat(roamsr.settings.defaultDeck)) {
+		for (let deck of roamsr.settings.customDecks.concat(roamsr.settings.defaultDeck)) {
 			var todayReviews = todayReviewedCards.reduce(
 				(a, card) => {
 					if (deck.tag ? card.decks.includes(deck.tag) : card.decks.length == 0) {
