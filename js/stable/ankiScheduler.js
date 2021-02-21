@@ -1,16 +1,17 @@
+const defaultConfig = {
+	defaultFactor: 2.5,
+	firstFewIntervals: [1, 6],
+	factorModifier: 0.15,
+	easeBonus: 1.3,
+	hardFactor: 1.2,
+	minFactor: 1.3,
+	jitterPercentage: 0.05,
+	maxInterval: 50 * 365,
+	responseTexts: ["Again.", "Hard.", "Good.", "Easy."],
+};
+
 export const ankiScheduler = (userConfig) => {
-	var config = {
-		defaultFactor: 2.5,
-		firstFewIntervals: [1, 6],
-		factorModifier: 0.15,
-		easeBonus: 1.3,
-		hardFactor: 1.2,
-		minFactor: 1.3,
-		jitterPercentage: 0.05,
-		maxInterval: 50 * 365,
-		responseTexts: ["Again.", "Hard.", "Good.", "Easy."],
-	};
-	config = Object.assign(config, userConfig);
+	const config = Object.assign(defaultConfig, userConfig);
 
 	var algorithm = (history) => {
 		var nextInterval;
