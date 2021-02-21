@@ -1,15 +1,3 @@
-const defaultConfig = {
-	defaultFactor: 2.5,
-	firstFewIntervals: [1, 6],
-	factorModifier: 0.15,
-	easeBonus: 1.3,
-	hardFactor: 1.2,
-	minFactor: 1.3,
-	jitterPercentage: 0.05,
-	maxInterval: 50 * 365,
-	responseTexts: ["Again.", "Hard.", "Good.", "Easy."],
-};
-
 const getLastFail = (history) => (history ? history.map((review) => review.signal).lastIndexOf("1") : 0);
 
 const isLearningPhase = (config, history) => history.length == 0 || history.length <= config.firstFewIntervals.length;
@@ -104,6 +92,18 @@ const getRetainingPhaseResponses = (config, history) => {
 		getRetainingPhaseResponse(config, finalFactor, finalInterval, "3"),
 		getRetainingPhaseResponse(config, finalFactor, finalInterval, "4"),
 	];
+};
+
+const defaultConfig = {
+	defaultFactor: 2.5,
+	firstFewIntervals: [1, 6],
+	factorModifier: 0.15,
+	easeBonus: 1.3,
+	hardFactor: 1.2,
+	minFactor: 1.3,
+	jitterPercentage: 0.05,
+	maxInterval: 50 * 365,
+	responseTexts: ["Again.", "Hard.", "Good.", "Easy."],
 };
 
 export const ankiScheduler = (userConfig) => {
