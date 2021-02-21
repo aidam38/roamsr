@@ -8,17 +8,16 @@ const recurDeck = (part) => {
 	return result;
 };
 
+const getDecks = (res, settings) => {
+	var possibleDecks = recurDeck(res).map((deck) => deck.title);
+	return possibleDecks.filter((deckTag) => settings.customDecks.map((customDeck) => customDeck.tag).includes(deckTag));
+};
+
 export const loadCards = async (limits, dateBasis = new Date()) => {
 	// Common functions
-	var getDecks = (res) => {
-		var possibleDecks = recurDeck(res).map((deck) => deck.title);
-		return possibleDecks.filter((deckTag) =>
-			roamsr.settings.customDecks.map((customDeck) => customDeck.tag).includes(deckTag)
-		);
-	};
 
 	var getAlgorithm = (res) => {
-		let decks = getDecks(res);
+		let decks = getDecks(res, roamsr.settings);
 		let preferredDeck;
 		let algorithm;
 
@@ -90,7 +89,7 @@ export const loadCards = async (limits, dateBasis = new Date()) => {
 		let card = {
 			uid: res.uid,
 			isNew: isNew(res),
-			decks: getDecks(res),
+			decks: getDecks(res, roamsr.settings),
 			algorithm: getAlgorithm(res),
 			string: res.string,
 			history: getHistory(res),
@@ -123,7 +122,7 @@ export const loadCards = async (limits, dateBasis = new Date()) => {
 			let card = {
 				uid: result[0].uid,
 				isNew: isNew(result[0]),
-				decks: getDecks(result[0]),
+				decks: getDecks(result[0], roamsr.settings),
 			};
 			return card;
 		});
