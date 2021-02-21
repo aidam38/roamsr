@@ -1,51 +1,52 @@
+const basicCSS = `
+.roamsr-widget__review-button {
+  color: #5C7080 !important;
+}
+
+.roamsr-widget__review-button:hover {
+  color: #F5F8FA !important;
+}
+
+.roamsr-return-button-container {
+  z-index: 100000;
+  margin: 5px 0px 5px 45px;
+}
+
+.roamsr-wrapper {
+  pointer-events: none;
+  position: relative;
+  bottom: 180px;
+  justify-content: center;
+}
+
+.roamsr-container {
+  width: 100%;
+  max-width: 600px;
+  justify-content: center;
+  align-items: center;
+  padding: 5px 20px;
+}
+
+.roamsr-button {
+  z-index: 10000;
+  pointer-events: all;
+}
+
+.roamsr-response-area {
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.roamsr-flag-button-container {
+  width: 100%;
+}
+`;
+
 export const addBasicStyles = () => {
-	var style = `
-  .roamsr-widget__review-button {
-    color: #5C7080 !important;
-  }
-  
-  .roamsr-widget__review-button:hover {
-    color: #F5F8FA !important;
-  }
-  
-  .roamsr-return-button-container {
-    z-index: 100000;
-    margin: 5px 0px 5px 45px;
-  }
-
-  .roamsr-wrapper {
-    pointer-events: none;
-    position: relative;
-    bottom: 180px;
-    justify-content: center;
-  }
-
-  .roamsr-container {
-    width: 100%;
-    max-width: 600px;
-    justify-content: center;
-    align-items: center;
-    padding: 5px 20px;
-  }
-
-  .roamsr-button {
-    z-index: 10000;
-    pointer-events: all;
-  }
-
-  .roamsr-response-area {
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 15px;
-  }
-
-  .roamsr-flag-button-container {
-    width: 100%;
-  }
-  `;
 	var basicStyles = Object.assign(document.createElement("style"), {
 		id: "roamsr-css-basic",
-		innerHTML: style,
+		innerHTML: basicCSS,
 	});
 	document.getElementsByTagName("head")[0].appendChild(basicStyles);
 };
