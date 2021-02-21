@@ -29,10 +29,10 @@ const getLearningPhaseResponses = (config, history) => {
 	];
 };
 
-const getDelay = (hist, prevInterval) => {
-	if (hist && hist.length > 1)
+const getDelay = (history, prevInterval) => {
+	if (history && history.length > 1)
 		return Math.max(
-			(hist[hist.length - 1].date - hist[hist.length - 2].date) / (1000 * 60 * 60 * 24) - prevInterval,
+			(history[history.length - 1].date - history[history.length - 2].date) / (1000 * 60 * 60 * 24) - prevInterval,
 			0
 		);
 	else return 0;
