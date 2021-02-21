@@ -12,6 +12,8 @@ const defaultConfig = {
 
 const getLastFail = (history) => (history ? history.map((review) => review.signal).lastIndexOf("1") : 0);
 
+const isLearningPhase = (config, history) => history.length == 0 || history.length <= config.firstFewIntervals.length;
+
 export const ankiScheduler = (userConfig) => {
 	const config = Object.assign(defaultConfig, userConfig);
 
@@ -19,8 +21,8 @@ export const ankiScheduler = (userConfig) => {
 		var nextInterval;
 		var lastFail = getLastFail(history);
 		history = history ? (lastFail == -1 ? history : history.slice(lastFail + 1)) : [];
-		// Check if in learning phase
-		if (history.length == 0 || history.length <= config.firstFewIntervals.length) {
+
+		if (isLearningPhase(config, history)) {
 			return [
 				{
 					responseText: config.responseTexts[0],
