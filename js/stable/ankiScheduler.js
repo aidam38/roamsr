@@ -43,31 +43,37 @@ const addJitter = (config, interval) => {
 	return interval + (-jitter + Math.random() * jitter);
 };
 
-const getRetainingPhaseResponses = (config, history) => {
-	var calculateNewParams = (prevFactor, prevInterval, delay, signal) => {
-		var [newFactor, newInterval] = (() => {
-			switch (signal) {
-				case "1":
-					return [prevFactor - 0.2, 0];
-				case "2":
-					return [prevFactor - config.factorModifier, prevInterval * config.hardFactor];
-				case "3":
-					return [prevFactor, (prevInterval + delay / 2) * prevFactor];
-				case "4":
-					return [prevFactor + config.factorModifier, (prevInterval + delay) * prevFactor * config.easeBonus];
-				default:
-					return [prevFactor, prevInterval * prevFactor];
-			}
-		})();
-		return [newFactor, Math.min(newInterval, config.maxInterval)];
-	};
+const calculateNewParamsForRetainingPhase = (config, prevFactor, prevInterval, delay, signal) => {
+	var [newFactor, newInterval] = (() => {
+		switch (signal) {
+			case "1":
+				return [prevFactor - 0.2, 0];
+			case "2":
+				return [prevFactor - config.factorModifier, prevInterval * config.hardFactor];
+			case "3":
+				return [prevFactor, (prevInterval + delay / 2) * prevFactor];
+			case "4":
+				return [prevFactor + config.factorModifier, (prevInterval + delay) * prevFactor * config.easeBonus];
+			default:
+				return [prevFactor, prevInterval * prevFactor];
+		}
+	})();
+	return [newFactor, Math.min(newInterval, config.maxInterval)];
+};
 
+const getRetainingPhaseResponses = (config, history) => {
 	var recurAnki = (hist) => {
 		if (!hist || hist.length <= config.firstFewIntervals.length) {
 			return [config.defaultFactor, config.firstFewIntervals[config.firstFewIntervals.length - 1]];
 		} else {
 			var [prevFactor, prevInterval] = recurAnki(hist.slice(0, -1));
-			return calculateNewParams(prevFactor, prevInterval, getDelay(hist, prevInterval), hist[hist.length - 1].signal);
+			return calculateNewParamsForRetainingPhase(
+				config,
+				prevFactor,
+				prevInterval,
+				getDelay(hist, prevInterval),
+				hist[hist.length - 1].signal
+			);
 		}
 	};
 
@@ -78,7 +84,16 @@ const getRetainingPhaseResponses = (config, history) => {
 			responseText: config.responseTexts[parseInt(signal) - 1],
 			signal: signal,
 			interval: Math.floor(
-				addJitter(config, calculateNewParams(finalFactor, finalInterval, getDelay(history, finalInterval), signal)[1])
+				addJitter(
+					config,
+					calculateNewParamsForRetainingPhase(
+						config,
+						finalFactor,
+						finalInterval,
+						getDelay(history, finalInterval),
+						signal
+					)[1]
+				)
 			),
 		};
 	};
