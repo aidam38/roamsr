@@ -62,8 +62,14 @@ export const setCustomStyle = (yes) => {
 			`[:find (pull ?style [:block/string]) :where [?roamsr :node/title "roam\/sr"] [?roamsr :block/children ?css] [?css :block/refs ?roamcss] [?roamcss :node/title "roam\/css"] [?css :block/children ?style]]`
 		);
 
+		// this is necessary because having three ` breaks Roam-code-blocks
+		// other solutions have lead to the minifier appending three `
+		const replaceStrPartial = "``";
+
 		if (styleQuery && styleQuery.length != 0) {
-			var customStyle = styleQuery[0][0].string.replace("`" + "``css", "").replace("`" + "``", "");
+			var customStyle = styleQuery[0][0].string
+				.replace("`" + replaceStrPartial + "css", "")
+				.replace("`" + replaceStrPartial, "");
 
 			var roamsrCSS = Object.assign(document.createElement("style"), {
 				id: styleId,
