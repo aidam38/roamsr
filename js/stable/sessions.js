@@ -5,21 +5,21 @@ import { goToCurrentCard } from "./mainFunctions";
 import { setCustomStyle, showAnswerAndCloze } from "./styles";
 import { addWidget, removeContainer, removeReturnButton, updateCounters } from "./uiElements";
 
+const defaultSettings = {
+	mainTag: "sr",
+	flagTag: "f",
+	clozeStyle: "highlight", // "highlight" or "block-ref"
+	defaultDeck: {
+		algorithm: null,
+		config: {},
+		newCardLimit: 20,
+		reviewLimit: 100,
+	},
+	customDecks: [],
+};
+
 export const loadSettings = () => {
-	// Default settings
-	roamsr.settings = {
-		mainTag: "sr",
-		flagTag: "f",
-		clozeStyle: "highlight", // "highlight" or "block-ref"
-		defaultDeck: {
-			algorithm: null,
-			config: {},
-			newCardLimit: 20,
-			reviewLimit: 100,
-		},
-		customDecks: [],
-	};
-	roamsr.settings = Object.assign(roamsr.settings, window.roamsrUserSettings);
+	roamsr.settings = Object.assign(defaultSettings, window.roamsrUserSettings);
 };
 
 export const loadState = async (i) => {
