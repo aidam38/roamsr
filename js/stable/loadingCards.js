@@ -41,27 +41,27 @@ const isNew = (res, dateBasis) => {
 		: true;
 };
 
-export const loadCards = async (limits, dateBasis = new Date()) => {
-	var getHistory = (res) => {
-		if (res._refs) {
-			return res._refs
-				.filter((ref) =>
-					ref._children && ref._children[0].refs
-						? ref._children[0].refs.map((ref2) => ref2.title).includes("roam/sr/review")
-						: false
-				)
-				.map((review) => {
-					return {
-						date: getFuckingDate(review.page.uid),
-						signal: review.refs[0] ? review.refs[0].title.slice(2) : null,
-						uid: review.uid,
-						string: review.string,
-					};
-				})
-				.sort((a, b) => a.date - b.date);
-		} else return [];
-	};
+const getHistory = (res) => {
+	if (res._refs) {
+		return res._refs
+			.filter((ref) =>
+				ref._children && ref._children[0].refs
+					? ref._children[0].refs.map((ref2) => ref2.title).includes("roam/sr/review")
+					: false
+			)
+			.map((review) => {
+				return {
+					date: getFuckingDate(review.page.uid),
+					signal: review.refs[0] ? review.refs[0].title.slice(2) : null,
+					uid: review.uid,
+					string: review.string,
+				};
+			})
+			.sort((a, b) => a.date - b.date);
+	} else return [];
+};
 
+export const loadCards = async (limits, dateBasis = new Date()) => {
 	// Query for all cards and their history
 	var mainQuery = `[
     :find (pull ?card [
