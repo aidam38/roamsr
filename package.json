@@ -1,0 +1,30 @@
+{
+  "name": "roamsr",
+  "version": "1.0.1",
+  "description": "For more info, see: https://roamresearch.com/#/app/roam-depot-developers/page/uQSCwVKx0",
+  "main": "./js/stable.js",
+  "scripts": {
+    "build": "parcel build ./js/stable.js --no-source-maps --no-content-hash --no-minify"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aidam38/roamsr.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aidam38/roamsr/issues"
+  },
+  "homepage": "https://github.com/aidam38/roamsr#readme",
+  "devDependencies": {
+    "parcel-bundler": "^1.12.4"
+  },
+  "browserslist": [
+    "last 3 and_chr versions",
+    "last 3 chrome versions",
+    "last 3 opera versions",
+    "last 3 ios_saf versions",
+    "last 3 safari versions",
+    "last 3 firefox versions"
+  ]
+}
