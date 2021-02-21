@@ -97,6 +97,13 @@ const getTodayQuery = (settings, todayUid) => `[
       [?srPage :node/title "${settings.mainTag}"]
     ]`;
 
+const isDue = (card, dateBasis) =>
+	card.history.length > 0
+		? card.history.some((review) => {
+				return !review.signal && new Date(review.date) <= dateBasis;
+		  })
+		: true;
+
 export const loadCards = async (limits, dateBasis = new Date()) => {
 	// Query for all cards and their history
 	var mainQuery = getMainQuery(roamsr.settings);
@@ -129,14 +136,7 @@ export const loadCards = async (limits, dateBasis = new Date()) => {
 			return card;
 		});
 
-	// Filter only cards that are due
-	cards = cards.filter((card) =>
-		card.history.length > 0
-			? card.history.some((review) => {
-					return !review.signal && new Date(review.date) <= dateBasis;
-			  })
-			: true
-	);
+	cards = cards.filter((card) => isDue(card, dateBasis));
 
 	// Filter out cards over limit
 	roamsr.state.extraCards = [[], []];
