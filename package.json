@@ -2,9 +2,9 @@
   "name": "roamsr",
   "version": "1.0.1",
   "description": "For more info, see: https://roamresearch.com/#/app/roam-depot-developers/page/uQSCwVKx0",
-  "main": "./js/stable.js",
+  "main": "./js/stable/stable.js",
   "scripts": {
-    "build": "parcel build ./js/stable.js --no-source-maps --no-content-hash --no-minify"
+    "build": "parcel build ./js/stable/stable.js --no-source-maps --no-content-hash --no-minify"
   },
   "repository": {
     "type": "git",
