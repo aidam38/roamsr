@@ -38,6 +38,11 @@ const getDelay = (history, prevInterval) => {
 	else return 0;
 };
 
+const addJitter = (config, interval) => {
+	var jitter = interval * config.jitterPercentage;
+	return interval + (-jitter + Math.random() * jitter);
+};
+
 const getRetainingPhaseResponses = (config, history) => {
 	var calculateNewParams = (prevFactor, prevInterval, delay, signal) => {
 		var [newFactor, newInterval] = (() => {
@@ -68,17 +73,12 @@ const getRetainingPhaseResponses = (config, history) => {
 
 	var [finalFactor, finalInterval] = recurAnki(history.slice(0, -1));
 
-	var addJitter = (interval) => {
-		var jitter = interval * config.jitterPercentage;
-		return interval + (-jitter + Math.random() * jitter);
-	};
-
 	var getResponse = (signal) => {
 		return {
 			responseText: config.responseTexts[parseInt(signal) - 1],
 			signal: signal,
 			interval: Math.floor(
-				addJitter(calculateNewParams(finalFactor, finalInterval, getDelay(history, finalInterval), signal)[1])
+				addJitter(config, calculateNewParams(finalFactor, finalInterval, getDelay(history, finalInterval), signal)[1])
 			),
 		};
 	};
