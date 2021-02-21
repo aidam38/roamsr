@@ -93,7 +93,7 @@ export const exposeInternalAPI = () => {
 	roamsr.updateCounters = () => updateCounters(roamsr.state);
 
 	// CONTAINER
-	roamsr.addContainer = addContainer;
+	roamsr.addContainer = () => addContainer(roamsr.state);
 
 	roamsr.removeContainer = removeContainer;
 

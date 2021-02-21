@@ -42,7 +42,7 @@ export const updateCounters = (state) => {
 };
 
 // CONTAINER
-export const addContainer = () => {
+export const addContainer = (state) => {
 	if (!document.querySelector(".roamsr-container")) {
 		var wrapper = Object.assign(document.createElement("div"), {
 			className: "flex-h-box roamsr-wrapper",
@@ -74,7 +74,7 @@ export const addContainer = () => {
 			className: "flex-h-box roamsr-container__response-area",
 		});
 
-		container.append(getCounter(roamsr.state), responseArea, flagButtonContainer);
+		container.append(getCounter(state), responseArea, flagButtonContainer);
 		wrapper.append(container);
 
 		var bodyDiv = document.querySelector(".roam-body-main");

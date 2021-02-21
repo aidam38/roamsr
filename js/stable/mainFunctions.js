@@ -148,7 +148,7 @@ export const goToCurrentCard = async () => {
 	var doStuff = async () => {
 		goToUid(getCurrentCard().uid);
 		await sleep(50);
-		addContainer();
+		addContainer(roamsr.state);
 		addShowAnswerButton();
 	};
 
