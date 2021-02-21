@@ -76,28 +76,34 @@ const recurAnki = (config, history) => {
 	}
 };
 
+const getRetainingPhaseResponse = (config, finalFactor, finalInterval, signal) => {
+	return {
+		responseText: config.responseTexts[parseInt(signal) - 1],
+		signal: signal,
+		interval: Math.floor(
+			addJitter(
+				config,
+				calculateNewParamsForRetainingPhase(
+					config,
+					finalFactor,
+					finalInterval,
+					getDelay(history, finalInterval),
+					signal
+				)[1]
+			)
+		),
+	};
+};
+
 const getRetainingPhaseResponses = (config, history) => {
 	var [finalFactor, finalInterval] = recurAnki(config, history.slice(0, -1));
 
-	var getResponse = (signal) => {
-		return {
-			responseText: config.responseTexts[parseInt(signal) - 1],
-			signal: signal,
-			interval: Math.floor(
-				addJitter(
-					config,
-					calculateNewParamsForRetainingPhase(
-						config,
-						finalFactor,
-						finalInterval,
-						getDelay(history, finalInterval),
-						signal
-					)[1]
-				)
-			),
-		};
-	};
-	return [getResponse("1"), getResponse("2"), getResponse("3"), getResponse("4")];
+	return [
+		getRetainingPhaseResponse(config, finalFactor, finalInterval, "1"),
+		getRetainingPhaseResponse(config, finalFactor, finalInterval, "2"),
+		getRetainingPhaseResponse(config, finalFactor, finalInterval, "3"),
+		getRetainingPhaseResponse(config, finalFactor, finalInterval, "4"),
+	];
 };
 
 export const ankiScheduler = (userConfig) => {
