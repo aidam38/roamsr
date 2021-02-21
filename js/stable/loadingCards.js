@@ -80,6 +80,23 @@ const getMainQuery = (settings) => `[
         [?queryPage :node/title "query"])
     ]`;
 
+const getTodayQuery = (settings, todayUid) => `[
+    :find (pull ?card 
+      [:block/uid 
+      {:block/refs [:node/title]} 
+      {:block/_refs [{:block/page [:block/uid]}]}]) 
+      (pull ?review [:block/refs])
+    :where 
+      [?reviewParent :block/children ?review] 
+      [?reviewParent :block/page ?todayPage] 
+      [?todayPage :block/uid "${todayUid}"] 
+      [?reviewParent :block/refs ?reviewPage] 
+      [?reviewPage :node/title "roam/sr/review"] 
+      [?review :block/refs ?card] 
+      [?card :block/refs ?srPage] 
+      [?srPage :node/title "${settings.mainTag}"]
+    ]`;
+
 export const loadCards = async (limits, dateBasis = new Date()) => {
 	// Query for all cards and their history
 	var mainQuery = getMainQuery(roamsr.settings);
@@ -99,22 +116,7 @@ export const loadCards = async (limits, dateBasis = new Date()) => {
 
 	// Query for today's review
 	var todayUid = getRoamDate().uid;
-	var todayQuery = `[
-    :find (pull ?card 
-      [:block/uid 
-      {:block/refs [:node/title]} 
-      {:block/_refs [{:block/page [:block/uid]}]}]) 
-      (pull ?review [:block/refs])
-    :where 
-      [?reviewParent :block/children ?review] 
-      [?reviewParent :block/page ?todayPage] 
-      [?todayPage :block/uid "${todayUid}"] 
-      [?reviewParent :block/refs ?reviewPage] 
-      [?reviewPage :node/title "roam/sr/review"] 
-      [?review :block/refs ?card] 
-      [?card :block/refs ?srPage] 
-      [?srPage :node/title "${roamsr.settings.mainTag}"]
-    ]`;
+	var todayQuery = getTodayQuery(roamsr.settings, todayUid);
 	var todayQueryResult = await window.roamAlphaAPI.q(todayQuery);
 	var todayReviewedCards = todayQueryResult
 		.filter((result) => result[1].refs.length == 2)
