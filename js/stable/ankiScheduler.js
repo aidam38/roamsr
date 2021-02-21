@@ -29,73 +29,71 @@ const getLearningPhaseResponses = (config, history) => {
 	];
 };
 
+const getRetainingPhaseResponses = (config, history) => {
+	var calculateNewParams = (prevFactor, prevInterval, delay, signal) => {
+		var [newFactor, newInterval] = (() => {
+			switch (signal) {
+				case "1":
+					return [prevFactor - 0.2, 0];
+				case "2":
+					return [prevFactor - config.factorModifier, prevInterval * config.hardFactor];
+				case "3":
+					return [prevFactor, (prevInterval + delay / 2) * prevFactor];
+				case "4":
+					return [prevFactor + config.factorModifier, (prevInterval + delay) * prevFactor * config.easeBonus];
+				default:
+					return [prevFactor, prevInterval * prevFactor];
+			}
+		})();
+		return [newFactor, Math.min(newInterval, config.maxInterval)];
+	};
+	var getDelay = (hist, prevInterval) => {
+		if (hist && hist.length > 1)
+			return Math.max(
+				(hist[hist.length - 1].date - hist[hist.length - 2].date) / (1000 * 60 * 60 * 24) - prevInterval,
+				0
+			);
+		else return 0;
+	};
+	var recurAnki = (hist) => {
+		if (!hist || hist.length <= config.firstFewIntervals.length) {
+			return [config.defaultFactor, config.firstFewIntervals[config.firstFewIntervals.length - 1]];
+		} else {
+			var [prevFactor, prevInterval] = recurAnki(hist.slice(0, -1));
+			return calculateNewParams(prevFactor, prevInterval, getDelay(hist, prevInterval), hist[hist.length - 1].signal);
+		}
+	};
+
+	var [finalFactor, finalInterval] = recurAnki(history.slice(0, -1));
+
+	var addJitter = (interval) => {
+		var jitter = interval * config.jitterPercentage;
+		return interval + (-jitter + Math.random() * jitter);
+	};
+
+	var getResponse = (signal) => {
+		return {
+			responseText: config.responseTexts[parseInt(signal) - 1],
+			signal: signal,
+			interval: Math.floor(
+				addJitter(calculateNewParams(finalFactor, finalInterval, getDelay(history, finalInterval), signal)[1])
+			),
+		};
+	};
+	return [getResponse("1"), getResponse("2"), getResponse("3"), getResponse("4")];
+};
+
 export const ankiScheduler = (userConfig) => {
 	const config = Object.assign(defaultConfig, userConfig);
 
 	var algorithm = (history) => {
-		var nextInterval;
 		var lastFail = getLastFail(history);
 		history = history ? (lastFail == -1 ? history : history.slice(lastFail + 1)) : [];
 
 		if (isLearningPhase(config, history)) {
 			return getLearningPhaseResponses(config, history);
 		} else {
-			var calculateNewParams = (prevFactor, prevInterval, delay, signal) => {
-				var [newFactor, newInterval] = (() => {
-					switch (signal) {
-						case "1":
-							return [prevFactor - 0.2, 0];
-						case "2":
-							return [prevFactor - config.factorModifier, prevInterval * config.hardFactor];
-						case "3":
-							return [prevFactor, (prevInterval + delay / 2) * prevFactor];
-						case "4":
-							return [prevFactor + config.factorModifier, (prevInterval + delay) * prevFactor * config.easeBonus];
-						default:
-							return [prevFactor, prevInterval * prevFactor];
-					}
-				})();
-				return [newFactor, Math.min(newInterval, config.maxInterval)];
-			};
-			var getDelay = (hist, prevInterval) => {
-				if (hist && hist.length > 1)
-					return Math.max(
-						(hist[hist.length - 1].date - hist[hist.length - 2].date) / (1000 * 60 * 60 * 24) - prevInterval,
-						0
-					);
-				else return 0;
-			};
-			var recurAnki = (hist) => {
-				if (!hist || hist.length <= config.firstFewIntervals.length) {
-					return [config.defaultFactor, config.firstFewIntervals[config.firstFewIntervals.length - 1]];
-				} else {
-					var [prevFactor, prevInterval] = recurAnki(hist.slice(0, -1));
-					return calculateNewParams(
-						prevFactor,
-						prevInterval,
-						getDelay(hist, prevInterval),
-						hist[hist.length - 1].signal
-					);
-				}
-			};
-
-			var [finalFactor, finalInterval] = recurAnki(history.slice(0, -1));
-
-			var addJitter = (interval) => {
-				var jitter = interval * config.jitterPercentage;
-				return interval + (-jitter + Math.random() * jitter);
-			};
-
-			var getResponse = (signal) => {
-				return {
-					responseText: config.responseTexts[parseInt(signal) - 1],
-					signal: signal,
-					interval: Math.floor(
-						addJitter(calculateNewParams(finalFactor, finalInterval, getDelay(history, finalInterval), signal)[1])
-					),
-				};
-			};
-			return [getResponse("1"), getResponse("2"), getResponse("3"), getResponse("4")];
+			return getRetainingPhaseResponses(config, history);
 		}
 	};
 	return algorithm;
