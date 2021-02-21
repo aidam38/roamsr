@@ -138,7 +138,7 @@ export const stepToNext = async () => {
 		roamsr.state.currentIndex++;
 		goToCurrentCard();
 	}
-	updateCounters();
+	updateCounters(roamsr.state);
 };
 
 export const goToCurrentCard = async () => {

@@ -90,7 +90,7 @@ export const exposeInternalAPI = () => {
 	// COMMON
 	roamsr.getCounter = getCounter;
 
-	roamsr.updateCounters = updateCounters;
+	roamsr.updateCounters = () => updateCounters(roamsr.state);
 
 	// CONTAINER
 	roamsr.addContainer = addContainer;

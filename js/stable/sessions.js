@@ -82,7 +82,7 @@ export const endSession = async () => {
 		goToUid();
 
 		await loadState(-1);
-		updateCounters();
+		updateCounters(roamsr.state);
 	};
 
 	await doStuff();
@@ -90,5 +90,5 @@ export const endSession = async () => {
 	await doStuff(); // ... again to make sure
 	await sleep(1000);
 	await loadState(-1);
-	updateCounters(); // ... once again
+	updateCounters(roamsr.state); // ... once again
 };

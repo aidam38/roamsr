@@ -34,10 +34,10 @@ export const getCounter = (deck) => {
 	return counter;
 };
 
-export const updateCounters = () => {
-	var counter = document.querySelectorAll(".roamsr-counter").forEach((counter) => {
+export const updateCounters = (state) => {
+	document.querySelectorAll(".roamsr-counter").forEach((counter) => {
 		counter.innerHTML = getCounter().innerHTML;
-		counter.style.cssText = !roamsr.state.limits ? "font-style: italic;" : "font-style: inherit;";
+		counter.style.cssText = !state.limits ? "font-style: italic;" : "font-style: inherit;";
 	});
 };
 
@@ -182,7 +182,7 @@ export const createWidget = () => {
 		onclick: async () => {
 			roamsr.state.limits = !roamsr.state.limits;
 			roamsr.state.queue = await loadCards();
-			updateCounters();
+			updateCounters(roamsr.state);
 		},
 	});
 	var counterContainer = Object.assign(document.createElement("div"), {
