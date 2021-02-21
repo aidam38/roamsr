@@ -14,6 +14,21 @@ const getLastFail = (history) => (history ? history.map((review) => review.signa
 
 const isLearningPhase = (config, history) => history.length == 0 || history.length <= config.firstFewIntervals.length;
 
+const getLearningPhaseResponses = (config, history) => {
+	return [
+		{
+			responseText: config.responseTexts[0],
+			signal: 1,
+			interval: 0,
+		},
+		{
+			responseText: config.responseTexts[2],
+			signal: 3,
+			interval: config.firstFewIntervals[history ? Math.max(history.length - 1, 0) : 0],
+		},
+	];
+};
+
 export const ankiScheduler = (userConfig) => {
 	const config = Object.assign(defaultConfig, userConfig);
 
@@ -23,18 +38,7 @@ export const ankiScheduler = (userConfig) => {
 		history = history ? (lastFail == -1 ? history : history.slice(lastFail + 1)) : [];
 
 		if (isLearningPhase(config, history)) {
-			return [
-				{
-					responseText: config.responseTexts[0],
-					signal: 1,
-					interval: 0,
-				},
-				{
-					responseText: config.responseTexts[2],
-					signal: 3,
-					interval: config.firstFewIntervals[history ? Math.max(history.length - 1, 0) : 0],
-				},
-			];
+			return getLearningPhaseResponses(config, history);
 		} else {
 			var calculateNewParams = (prevFactor, prevInterval, delay, signal) => {
 				var [newFactor, newInterval] = (() => {
