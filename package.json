@@ -6,7 +6,6 @@
   "scripts": {
     "build": "parcel build ./js/stable/stable.js --no-source-maps --no-content-hash --no-minify",
     "build-min": "parcel build ./js/stable/stable.js --no-source-maps --no-content-hash"
-
   },
   "repository": {
     "type": "git",

@@ -10,7 +10,7 @@ export const buttonClickHandler = async (e) => {
 			var results = await window.roamAlphaAPI.q(q, uid);
 			if (results.length == 0) return;
 			var children = results[0][0].children;
-			for (child of children) {
+			for (let child of children) {
 				window.roamAlphaAPI.updateBlock({
 					block: {
 						uid: child.uid,
