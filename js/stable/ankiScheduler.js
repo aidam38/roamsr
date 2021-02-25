@@ -64,7 +64,7 @@ const recurAnki = (config, history) => {
 	}
 };
 
-const getRetainingPhaseResponse = (config, finalFactor, finalInterval, signal) => {
+const getRetainingPhaseResponse = (config, finalFactor, finalInterval, signal, history) => {
 	return {
 		responseText: config.responseTexts[parseInt(signal) - 1],
 		signal: signal,
@@ -87,10 +87,10 @@ const getRetainingPhaseResponses = (config, history) => {
 	var [finalFactor, finalInterval] = recurAnki(config, history.slice(0, -1));
 
 	return [
-		getRetainingPhaseResponse(config, finalFactor, finalInterval, "1"),
-		getRetainingPhaseResponse(config, finalFactor, finalInterval, "2"),
-		getRetainingPhaseResponse(config, finalFactor, finalInterval, "3"),
-		getRetainingPhaseResponse(config, finalFactor, finalInterval, "4"),
+		getRetainingPhaseResponse(config, finalFactor, finalInterval, "1", history),
+		getRetainingPhaseResponse(config, finalFactor, finalInterval, "2", history),
+		getRetainingPhaseResponse(config, finalFactor, finalInterval, "3", history),
+		getRetainingPhaseResponse(config, finalFactor, finalInterval, "4", history),
 	];
 };
 
