@@ -748,7 +748,7 @@ roamsr.addShowAnswerButton = () => {
       const extraButton = Object.assign(document.createElement("button"), {
         className: "bp3-button",
         innerHTML: button.text,
-        onclick: button.onClick
+        onclick: () => button.onClick(card)
       });
       extraButton.style.cssText = "margin: 5px";
       responseArea.append(extraButton);
