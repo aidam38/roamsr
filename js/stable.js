@@ -737,6 +737,23 @@ roamsr.addShowAnswerButton = () => {
   showAnswerAndClozeButton.style.cssText = "margin: 5px;";
 
   responseArea.append(showAnswerAndClozeButton);
+
+  if (typeof window.roamsrUserSettings.extraButtons === "object") {
+    for (let i = 0; i < window.roamsrUserSettings.extraButtons.length; i++) {
+      const button = window.roamsrUserSettings.extraButtons[i];
+      const card = roamsr.getCurrentCard();
+      if (!button.onShow) continue;
+      if (button.hasOwnProperty('decks') && card.decks.findIndex(deck => button.decks.includes(deck)) === -1)
+        continue;
+      const extraButton = Object.assign(document.createElement("button"), {
+        className: "bp3-button",
+        innerHTML: button.text,
+        onclick: button.onClick
+      });
+      extraButton.style.cssText = "margin: 5px";
+      responseArea.append(extraButton);
+    }
+  }
 };
 
 roamsr.requestAnswer = () => {
