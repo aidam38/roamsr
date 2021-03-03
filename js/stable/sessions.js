@@ -27,7 +27,7 @@ export const loadState = async (i) => {
 		limits: true,
 		currentIndex: i,
 	};
-	const { cards, extraCards } = await loadCards(roamsr.settings);
+	const { cards, extraCards } = await loadCards(roamsr.state.limits, roamsr.settings);
 	roamsr.state.queue = cards;
 	roamsr.state.extraCards = extraCards;
 	return;
