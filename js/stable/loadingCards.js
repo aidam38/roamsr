@@ -105,16 +105,18 @@ const isDue = (card, dateBasis) =>
 		: true;
 
 export const loadCards = async (limits, dateBasis = new Date()) => {
+	const settings = roamsr.settings;
+
 	// Query for all cards and their history
-	var mainQuery = getMainQuery(roamsr.settings);
+	var mainQuery = getMainQuery(settings);
 	var mainQueryResult = await window.roamAlphaAPI.q(mainQuery);
 	var cards = mainQueryResult.map((result) => {
 		let res = result[0];
 		let card = {
 			uid: res.uid,
 			isNew: isNew(res, dateBasis),
-			decks: getDecks(res, roamsr.settings),
-			algorithm: getAlgorithm(res, roamsr.settings),
+			decks: getDecks(res, settings),
+			algorithm: getAlgorithm(res, settings),
 			string: res.string,
 			history: getHistory(res),
 		};
@@ -123,7 +125,7 @@ export const loadCards = async (limits, dateBasis = new Date()) => {
 
 	// Query for today's review
 	var todayUid = getRoamDate().uid;
-	var todayQuery = getTodayQuery(roamsr.settings, todayUid);
+	var todayQuery = getTodayQuery(settings, todayUid);
 	var todayQueryResult = await window.roamAlphaAPI.q(todayQuery);
 	var todayReviewedCards = todayQueryResult
 		.filter((result) => result[1].refs.length == 2)
@@ -131,7 +133,7 @@ export const loadCards = async (limits, dateBasis = new Date()) => {
 			let card = {
 				uid: result[0].uid,
 				isNew: isNew(result[0], dateBasis),
-				decks: getDecks(result[0], roamsr.settings),
+				decks: getDecks(result[0], settings),
 			};
 			return card;
 		});
@@ -141,7 +143,7 @@ export const loadCards = async (limits, dateBasis = new Date()) => {
 	// Filter out cards over limit
 	roamsr.state.extraCards = [[], []];
 	if (roamsr.state.limits) {
-		for (let deck of roamsr.settings.customDecks.concat(roamsr.settings.defaultDeck)) {
+		for (let deck of settings.customDecks.concat(settings.defaultDeck)) {
 			var todayReviews = todayReviewedCards.reduce(
 				(a, card) => {
 					if (deck.tag ? card.decks.includes(deck.tag) : card.decks.length == 0) {
