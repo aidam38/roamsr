@@ -183,14 +183,18 @@ export const loadCards = async (settings, dateBasis = new Date()) => {
 	var cards = await queryDueCards(settings, dateBasis, asyncQueryFunction);
 	var todayReviewedCards = await queryTodayReviewedCards(settings, dateBasis, asyncQueryFunction);
 
+	let extraCardsResult;
+
 	if (roamsr.state.limits) {
 		const { extraCards, filteredCards } = filterCardsOverLimit(settings, cards, todayReviewedCards);
-		roamsr.state.extraCards = extraCards;
+		extraCardsResult = extraCards;
 		cards = filteredCards;
+	} else {
+		extraCardsResult = [[], []];
 	}
 
 	// TODO: extraCards are not sorted?
 	// Sort (new to front)
 	cards = cards.sort((a, b) => a.history.length - b.history.length);
-	return cards;
+	return { extraCards: extraCardsResult, cards };
 };

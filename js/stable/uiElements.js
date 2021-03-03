@@ -181,7 +181,9 @@ export const createWidget = () => {
 		className: "bp3-button bp3-minimal roamsr-counter",
 		onclick: async () => {
 			roamsr.state.limits = !roamsr.state.limits;
-			roamsr.state.queue = await loadCards(roamsr.settings);
+			const { cards, extraCards } = await loadCards(roamsr.settings);
+			roamsr.state.queue = cards;
+			roamsr.state.extraCards = extraCards;
 			updateCounters(roamsr.state);
 		},
 	});
