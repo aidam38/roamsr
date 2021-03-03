@@ -51,7 +51,7 @@ export const exposeInternalAPI = () => {
 
 	/* ====== LOADING CARDS ====== */
 
-	roamsr.loadCards = loadCards;
+	roamsr.loadCards = () => loadCards(roamsr.settings);
 
 	/* ====== STYLES ====== */
 

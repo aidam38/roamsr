@@ -104,9 +104,7 @@ const isDue = (card, dateBasis) =>
 		  })
 		: true;
 
-export const loadCards = async (limits, dateBasis = new Date()) => {
-	const settings = roamsr.settings;
-
+export const loadCards = async (settings, dateBasis = new Date()) => {
 	// Query for all cards and their history
 	var mainQuery = getMainQuery(settings);
 	var mainQueryResult = await window.roamAlphaAPI.q(mainQuery);
