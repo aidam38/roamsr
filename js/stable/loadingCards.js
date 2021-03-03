@@ -141,45 +141,55 @@ const queryTodayReviewedCards = async (settings, dateBasis, asyncQueryFunction) 
 		});
 };
 
+const filterCardsOverLimit = (settings, cards, todayReviewedCards) => {
+	const extraCards = [[], []];
+	const filteredCards = [...cards];
+	for (let deck of settings.customDecks.concat(settings.defaultDeck)) {
+		var todayReviews = todayReviewedCards.reduce(
+			(a, card) => {
+				if (deck.tag ? card.decks.includes(deck.tag) : card.decks.length == 0) {
+					if (!a[2].includes(card.uid)) {
+						a[2].push(card.uid);
+						a[card.isNew ? 0 : 1]++;
+					}
+				}
+				return a;
+			},
+			[0, 0, []]
+		);
+
+		const limits = [deck.newCardLimit || 0, deck.reviewLimit || 0];
+		const a = [0, 0];
+
+		for (let i = filteredCards.length - 1; i >= 0; i--) {
+			const card = filteredCards[i];
+			if (deck.tag ? card.decks.includes(deck.tag) : card.decks.length == 0) {
+				var j = card.isNew ? 0 : 1;
+				if (a[j] >= limits[j] - todayReviews[j]) {
+					a[j]++;
+					extraCards[j].push(filteredCards.splice(i, 1));
+				}
+			}
+		}
+		extraCards[0] = extraCards[0].concat(extraCards[0]);
+		extraCards[1] = extraCards[1].concat(extraCards[1]);
+	}
+	return { extraCards, filteredCards };
+};
+
 export const loadCards = async (settings, dateBasis = new Date()) => {
 	const asyncQueryFunction = window.roamAlphaAPI.q;
 
 	var cards = await queryDueCards(settings, dateBasis, asyncQueryFunction);
 	var todayReviewedCards = await queryTodayReviewedCards(settings, dateBasis, asyncQueryFunction);
 
-	// Filter out cards over limit
-	roamsr.state.extraCards = [[], []];
 	if (roamsr.state.limits) {
-		for (let deck of settings.customDecks.concat(settings.defaultDeck)) {
-			var todayReviews = todayReviewedCards.reduce(
-				(a, card) => {
-					if (deck.tag ? card.decks.includes(deck.tag) : card.decks.length == 0) {
-						if (!a[2].includes(card.uid)) {
-							a[2].push(card.uid);
-							a[card.isNew ? 0 : 1]++;
-						}
-					}
-					return a;
-				},
-				[0, 0, []]
-			);
-
-			cards.reduceRight(
-				(a, card, i) => {
-					if (deck.tag ? card.decks.includes(deck.tag) : card.decks.length == 0) {
-						var j = card.isNew ? 0 : 1;
-						var limits = [deck.newCardLimit || 0, deck.reviewLimit || 0];
-						if (a[j]++ >= limits[j] - todayReviews[j]) {
-							roamsr.state.extraCards[j].push(cards.splice(i, 1));
-						}
-					}
-					return a;
-				},
-				[0, 0]
-			);
-		}
+		const { extraCards, filteredCards } = filterCardsOverLimit(settings, cards, todayReviewedCards);
+		roamsr.state.extraCards = extraCards;
+		cards = filteredCards;
 	}
 
+	// TODO: extraCards are not sorted?
 	// Sort (new to front)
 	cards = cards.sort((a, b) => a.history.length - b.history.length);
 	return cards;
