@@ -61,24 +61,51 @@ const getHistory = (res) => {
 	} else return [];
 };
 
+const isDue = (card, dateBasis) =>
+	card.history.length > 0
+		? card.history.some((review) => {
+				return !review.signal && new Date(review.date) <= dateBasis;
+		  })
+		: true;
+
 const getMainQuery = (settings) => `[
-    :find (pull ?card [
-      :block/string 
-      :block/uid 
-      {:block/refs [:node/title]} 
-      {:block/_refs [:block/uid :block/string {:block/_children [:block/uid {:block/refs [:node/title]}]} {:block/refs [:node/title]} {:block/page [:block/uid]}]}
-      {:block/_children ...}
-    ])
-    :where 
-      [?card :block/refs ?srPage] 
-      [?srPage :node/title "${settings.mainTag}"] 
-      (not-join [?card] 
-        [?card :block/refs ?flagPage] 
-        [?flagPage :node/title "${settings.flagTag}"])
-      (not-join [?card] 
-        [?card :block/refs ?queryPage] 
-        [?queryPage :node/title "query"])
-    ]`;
+			:find (pull ?card [
+			  :block/string 
+			  :block/uid 
+			  {:block/refs [:node/title]} 
+			  {:block/_refs [:block/uid :block/string {:block/_children [:block/uid {:block/refs [:node/title]}]} {:block/refs [:node/title]} {:block/page [:block/uid]}]}
+			  {:block/_children ...}
+			])
+			:where 
+			  [?card :block/refs ?srPage] 
+			  [?srPage :node/title "${settings.mainTag}"] 
+			  (not-join [?card] 
+				[?card :block/refs ?flagPage] 
+				[?flagPage :node/title "${settings.flagTag}"])
+			  (not-join [?card] 
+				[?card :block/refs ?queryPage] 
+				[?queryPage :node/title "query"])
+			]`;
+
+const queryDueCards = async (settings, dateBasis, asyncQueryFunction) => {
+	// Query for all due cards and their history
+	const mainQuery = getMainQuery(settings);
+	const mainQueryResult = await asyncQueryFunction(mainQuery);
+	return mainQueryResult
+		.map((result) => {
+			let res = result[0];
+			let card = {
+				uid: res.uid,
+				isNew: isNew(res, dateBasis),
+				decks: getDecks(res, settings),
+				algorithm: getAlgorithm(res, settings),
+				string: res.string,
+				history: getHistory(res),
+			};
+			return card;
+		})
+		.filter((card) => isDue(card, dateBasis));
+};
 
 const getTodayQuery = (settings, todayUid) => `[
     :find (pull ?card 
@@ -97,35 +124,12 @@ const getTodayQuery = (settings, todayUid) => `[
       [?srPage :node/title "${settings.mainTag}"]
     ]`;
 
-const isDue = (card, dateBasis) =>
-	card.history.length > 0
-		? card.history.some((review) => {
-				return !review.signal && new Date(review.date) <= dateBasis;
-		  })
-		: true;
-
-export const loadCards = async (settings, dateBasis = new Date()) => {
-	// Query for all cards and their history
-	var mainQuery = getMainQuery(settings);
-	var mainQueryResult = await window.roamAlphaAPI.q(mainQuery);
-	var cards = mainQueryResult.map((result) => {
-		let res = result[0];
-		let card = {
-			uid: res.uid,
-			isNew: isNew(res, dateBasis),
-			decks: getDecks(res, settings),
-			algorithm: getAlgorithm(res, settings),
-			string: res.string,
-			history: getHistory(res),
-		};
-		return card;
-	});
-
+const queryTodayReviewedCards = async (settings, dateBasis, asyncQueryFunction) => {
 	// Query for today's review
-	var todayUid = getRoamDate().uid;
-	var todayQuery = getTodayQuery(settings, todayUid);
-	var todayQueryResult = await window.roamAlphaAPI.q(todayQuery);
-	var todayReviewedCards = todayQueryResult
+	const todayUid = getRoamDate().uid;
+	const todayQuery = getTodayQuery(settings, todayUid);
+	const todayQueryResult = await asyncQueryFunction(todayQuery);
+	return todayQueryResult
 		.filter((result) => result[1].refs.length == 2)
 		.map((result) => {
 			let card = {
@@ -135,8 +139,13 @@ export const loadCards = async (settings, dateBasis = new Date()) => {
 			};
 			return card;
 		});
+};
 
-	cards = cards.filter((card) => isDue(card, dateBasis));
+export const loadCards = async (settings, dateBasis = new Date()) => {
+	const asyncQueryFunction = window.roamAlphaAPI.q;
+
+	var cards = await queryDueCards(settings, dateBasis, asyncQueryFunction);
+	var todayReviewedCards = await queryTodayReviewedCards(settings, dateBasis, asyncQueryFunction);
 
 	// Filter out cards over limit
 	roamsr.state.extraCards = [[], []];
