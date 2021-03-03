@@ -177,9 +177,7 @@ const filterCardsOverLimit = (settings, cards, todayReviewedCards) => {
 	return { extraCards, filteredCards };
 };
 
-export const loadCards = async (hasLimits, settings, dateBasis = new Date()) => {
-	const asyncQueryFunction = window.roamAlphaAPI.q;
-
+export const loadCards = async (hasLimits, settings, asyncQueryFunction, dateBasis = new Date()) => {
 	var cards = await queryDueCards(settings, dateBasis, asyncQueryFunction);
 	var todayReviewedCards = await queryTodayReviewedCards(settings, dateBasis, asyncQueryFunction);
 
