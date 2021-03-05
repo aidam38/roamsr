@@ -15,15 +15,16 @@ const getDecks = (res, settings) => {
 
 const getAlgorithm = (res, settings) => {
 	let decks = getDecks(res, settings);
-	let preferredDeck;
-	let algorithm;
 
+	let preferredDeck;
 	if (decks && decks.length > 0) {
 		preferredDeck = settings.customDecks.filter((customDeck) => customDeck.tag == decks[decks.length - 1])[0];
 	} else preferredDeck = settings.defaultDeck;
 
 	let scheduler = preferredDeck.scheduler || preferredDeck.algorithm;
 	let config = preferredDeck.config;
+
+	let algorithm;
 	if (!scheduler || scheduler === "anki") {
 		algorithm = ankiScheduler(config);
 	} else algorithm = scheduler(config);
@@ -41,22 +42,35 @@ const isNew = (res, dateBasis) => {
 		: true;
 };
 
-const getHistory = (res) => {
-	if (res._refs) {
-		return res._refs
-			.filter((ref) =>
-				ref._children && ref._children[0].refs
-					? ref._children[0].refs.map((ref2) => ref2.title).includes("roam/sr/review")
-					: false
-			)
-			.map((review) => {
-				return {
-					date: getFuckingDate(review.page.uid),
-					signal: review.refs[0] ? review.refs[0].title.slice(2) : null,
-					uid: review.uid,
-					string: review.string,
-				};
-			})
+const isReviewBlock = (block) =>
+	// is a child-block
+	block._children &&
+	// first parent has refs
+	block._children[0].refs
+		? // refs of parent include "roam/sr/review" = parent is a review-parent-block
+		  block._children[0].refs.map((ref2) => ref2.title).includes("roam/sr/review")
+		: false;
+
+// first ref is always a r/x-page where x is the repetition count / signal value
+// r/x -> x is done via the slice
+const extractSignalFromReviewBlock = (block) => (block.refs[0] ? block.refs[0].title.slice(2) : null);
+
+const reviewBlockToHistoryUnit = (block) => {
+	return {
+		date: getFuckingDate(block.page.uid),
+		signal: extractSignalFromReviewBlock(block),
+		uid: block.uid,
+		string: block.string,
+	};
+};
+
+const extractHistoryFromQueryResult = (result) => {
+	// having history means that the card-block is ref'ed by at least one review block
+	// that can be found nested under the "roam/sr/review"-block / review-parent-block on the respective daily-page
+	if (result._refs) {
+		return result._refs
+			.filter(isReviewBlock)
+			.map(reviewBlockToHistoryUnit)
 			.sort((a, b) => a.date - b.date);
 	} else return [];
 };
@@ -95,8 +109,8 @@ const createQueryForAllPermissibleCards = (settings) => `[
 
 const queryDueCards = async (settings, dateBasis, asyncQueryFunction) => {
 	const allPermissibleCardsQuery = createQueryForAllPermissibleCards(settings);
-	const allPermissibleCardsQueryResult = await asyncQueryFunction(allPermissibleCardsQuery);
-	return allPermissibleCardsQueryResult
+	const allPermissibleCardsQueryResults = await asyncQueryFunction(allPermissibleCardsQuery);
+	return allPermissibleCardsQueryResults
 		.map((result) => {
 			let res = result[0];
 			let card = {
@@ -105,7 +119,7 @@ const queryDueCards = async (settings, dateBasis, asyncQueryFunction) => {
 				decks: getDecks(res, settings),
 				algorithm: getAlgorithm(res, settings),
 				string: res.string,
-				history: getHistory(res),
+				history: extractHistoryFromQueryResult(res),
 			};
 			return card;
 		})
