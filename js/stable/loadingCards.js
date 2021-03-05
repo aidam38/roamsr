@@ -68,7 +68,8 @@ const isDue = (card, dateBasis) =>
 		  })
 		: true;
 
-const getMainQuery = (settings) => `[
+//cards with the flag-tag or the "query"-tag are not permissible
+const createQueryForAllPermissibleCards = (settings) => `[
 			:find (pull ?card [
 			  :block/string 
 			  :block/uid 
@@ -93,10 +94,9 @@ const getMainQuery = (settings) => `[
 			]`;
 
 const queryDueCards = async (settings, dateBasis, asyncQueryFunction) => {
-	// Query for all due cards and their history
-	const mainQuery = getMainQuery(settings);
-	const mainQueryResult = await asyncQueryFunction(mainQuery);
-	return mainQueryResult
+	const allPermissibleCardsQuery = createQueryForAllPermissibleCards(settings);
+	const allPermissibleCardsQueryResult = await asyncQueryFunction(allPermissibleCardsQuery);
+	return allPermissibleCardsQueryResult
 		.map((result) => {
 			let res = result[0];
 			let card = {
