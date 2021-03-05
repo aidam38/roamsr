@@ -1,5 +1,5 @@
 import { ankiScheduler } from "./ankiScheduler";
-import { getFuckingDate, getRoamDate } from "./helperFunctions";
+import { getCrossBrowserDate, getRoamDate } from "./helperFunctions";
 
 const recurDeck = (part) => {
 	var result = [];
@@ -35,7 +35,7 @@ const getAlgorithm = (res, settings) => {
 const isNew = (res, dateBasis) => {
 	return res._refs
 		? !res._refs.some((review) => {
-				var reviewDate = new Date(getFuckingDate(review.page.uid));
+				var reviewDate = new Date(getCrossBrowserDate(review.page.uid));
 				reviewDate.setDate(reviewDate.getDate() + 1);
 				return reviewDate < dateBasis;
 		  })
@@ -57,7 +57,7 @@ const extractSignalFromReviewBlock = (block) => (block.refs[0] ? block.refs[0].t
 
 const reviewBlockToHistoryUnit = (block) => {
 	return {
-		date: getFuckingDate(block.page.uid),
+		date: getCrossBrowserDate(block.page.uid),
 		signal: extractSignalFromReviewBlock(block),
 		uid: block.uid,
 		string: block.string,

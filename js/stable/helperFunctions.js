@@ -30,7 +30,7 @@ export const goToUid = (uid) => {
 	location.assign(url);
 };
 
-export const getFuckingDate = (str) => {
+export const getCrossBrowserDate = (str) => {
 	if (!str) return null;
 	let strSplit = str.split("-");
 	if (strSplit.length != 3) return null;

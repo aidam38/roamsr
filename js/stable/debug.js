@@ -4,7 +4,7 @@ import {
 	createUid,
 	removeSelector,
 	goToUid,
-	getFuckingDate,
+	getCrossBrowserDate,
 	getRoamDate,
 	getIntervalHumanReadable,
 } from "./helperFunctions";
@@ -43,7 +43,7 @@ export const exposeInternalAPI = () => {
 
 	roamsr.goToUid = goToUid;
 
-	roamsr.getFuckingDate = getFuckingDate;
+	roamsr.getCrossBrowserDate = getCrossBrowserDate;
 
 	roamsr.getRoamDate = getRoamDate;
 
