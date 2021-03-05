@@ -73,18 +73,23 @@ const getMainQuery = (settings) => `[
 			  :block/string 
 			  :block/uid 
 			  {:block/refs [:node/title]} 
-			  {:block/_refs [:block/uid :block/string {:block/_children [:block/uid {:block/refs [:node/title]}]} {:block/refs [:node/title]} {:block/page [:block/uid]}]}
+			  {:block/_refs 
+				[:block/uid :block/string 
+					{:block/_children 
+						[:block/uid {:block/refs [:node/title]}]} 
+					{:block/refs [:node/title]} 
+					{:block/page [:block/uid]}]}
 			  {:block/_children ...}
 			])
 			:where 
-			  [?card :block/refs ?srPage] 
 			  [?srPage :node/title "${settings.mainTag}"] 
+			  [?card :block/refs ?srPage] 
 			  (not-join [?card] 
-				[?card :block/refs ?flagPage] 
-				[?flagPage :node/title "${settings.flagTag}"])
+				[?flagPage :node/title "${settings.flagTag}"]
+				[?card :block/refs ?flagPage])
 			  (not-join [?card] 
-				[?card :block/refs ?queryPage] 
-				[?queryPage :node/title "query"])
+				[?queryPage :node/title "query"]
+				[?card :block/refs ?queryPage])
 			]`;
 
 const queryDueCards = async (settings, dateBasis, asyncQueryFunction) => {
@@ -114,14 +119,14 @@ const getTodayQuery = (settings, todayUid) => `[
       {:block/_refs [{:block/page [:block/uid]}]}]) 
       (pull ?review [:block/refs])
     :where 
-      [?reviewParent :block/children ?review] 
-      [?reviewParent :block/page ?todayPage] 
-      [?todayPage :block/uid "${todayUid}"] 
-      [?reviewParent :block/refs ?reviewPage] 
-      [?reviewPage :node/title "roam/sr/review"] 
+	  [?srPage :node/title "${settings.mainTag}"]
+	  [?card :block/refs ?srPage] 
       [?review :block/refs ?card] 
-      [?card :block/refs ?srPage] 
-      [?srPage :node/title "${settings.mainTag}"]
+      [?reviewPage :node/title "roam/sr/review"] 
+      [?reviewParent :block/refs ?reviewPage] 
+      [?reviewParent :block/children ?review] 
+      [?todayPage :block/uid "${todayUid}"] 
+      [?reviewParent :block/page ?todayPage] 
     ]`;
 
 const queryTodayReviewedCards = async (settings, dateBasis, asyncQueryFunction) => {
