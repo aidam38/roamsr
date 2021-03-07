@@ -13,6 +13,10 @@ import { loadCards } from "./loadingCards";
 import { scheduleCardIn, responseHandler, flagCard, stepToNext, goToCurrentCard } from "./mainFunctions";
 import { loadSettings, loadState, getCurrentCard, startSession, endSession } from "./sessions";
 import { buttonClickHandler } from "./srButton";
+
+// need this to force execution
+import { init } from "./stable";
+
 import { addBasicStyles, setCustomStyle, showAnswerAndCloze } from "./styles";
 import {
 	getCounter,
@@ -125,3 +129,5 @@ export const exposeInternalAPI = () => {
 	/* ====== {{sr}} BUTTON ====== */
 	roamsr.buttonClickHandler = buttonClickHandler;
 };
+
+exposeInternalAPI();

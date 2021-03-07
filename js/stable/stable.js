@@ -9,18 +9,22 @@ import { buttonClickHandler } from "./srButton";
 import { addBasicStyles } from "./styles";
 import { addWidget } from "./uiElements";
 
-var VERSION = "v1.0.1";
+export const init = () => {
+	var VERSION = "v1.0.1";
 
-if (!window.roamsr) window.roamsr = {};
+	if (!window.roamsr) window.roamsr = {};
 
-document.addEventListener("click", buttonClickHandler, false);
+	document.addEventListener("click", buttonClickHandler, false);
 
-console.log("🗃️ Loading roam/sr " + VERSION + ".");
+	console.log("🗃️ Loading roam/sr " + VERSION + ".");
 
-loadSettings();
-addBasicStyles();
-loadState(-1).then(() => {
-	addWidget();
-});
+	loadSettings();
+	addBasicStyles();
+	loadState(-1).then(() => {
+		addWidget();
+	});
 
-console.log("🗃️ Successfully loaded roam/sr " + VERSION + ".");
+	console.log("🗃️ Successfully loaded roam/sr " + VERSION + ".");
+};
+
+init();

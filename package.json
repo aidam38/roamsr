@@ -5,6 +5,7 @@
   "main": "./js/stable/stable.js",
   "scripts": {
     "build": "parcel build ./js/stable/stable.js --no-source-maps --no-content-hash --no-minify",
+    "build-debug": "parcel build ./js/stable/debug.js --no-source-maps --no-content-hash --no-minify",
     "build-min": "parcel build ./js/stable/stable.js --no-source-maps --no-content-hash",
     "test": "jest"
   },
