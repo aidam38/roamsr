@@ -30,9 +30,10 @@ export const goToUid = (uid) => {
 	location.assign(url);
 };
 
-export const getCrossBrowserDate = (str) => {
+export const dailyPageUIDToCrossBrowserDate = (str) => {
 	if (!str) return null;
 	let strSplit = str.split("-");
+	// if we use "null" as input for a new Date, we get the lowest possible Date (1970...)
 	if (strSplit.length != 3) return null;
 	try {
 		let date = new Date(strSplit[2] + "-" + strSplit[0] + "-" + strSplit[1]);

@@ -4,7 +4,7 @@ import {
 	createUid,
 	removeSelector,
 	goToUid,
-	getCrossBrowserDate,
+	dailyPageUIDToCrossBrowserDate,
 	getRoamDate,
 	getIntervalHumanReadable,
 } from "./helperFunctions";
@@ -47,7 +47,7 @@ export const exposeInternalAPI = () => {
 
 	roamsr.goToUid = goToUid;
 
-	roamsr.getCrossBrowserDate = getCrossBrowserDate;
+	roamsr.dailyPageUIDToCrossBrowserDate = dailyPageUIDToCrossBrowserDate;
 
 	roamsr.getRoamDate = getRoamDate;
 

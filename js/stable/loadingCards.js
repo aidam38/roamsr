@@ -1,5 +1,5 @@
 import { ankiScheduler } from "./ankiScheduler";
-import { getCrossBrowserDate, getRoamDate } from "./helperFunctions";
+import { dailyPageUIDToCrossBrowserDate, getRoamDate } from "./helperFunctions";
 
 const recurDeck = (part) => {
 	var result = [];
@@ -32,16 +32,6 @@ const getAlgorithm = (res, settings) => {
 	return algorithm;
 };
 
-const isNew = (res, dateBasis) => {
-	return res._refs
-		? !res._refs.some((review) => {
-				var reviewDate = new Date(getCrossBrowserDate(review.page.uid));
-				reviewDate.setDate(reviewDate.getDate() + 1);
-				return reviewDate < dateBasis;
-		  })
-		: true;
-};
-
 const isReviewBlock = (block) =>
 	// is a child-block
 	block._children &&
@@ -57,7 +47,7 @@ const extractSignalFromReviewBlock = (block) => (block.refs[0] ? block.refs[0].t
 
 const reviewBlockToHistoryUnit = (block) => {
 	return {
-		date: getCrossBrowserDate(block.page.uid),
+		date: dailyPageUIDToCrossBrowserDate(block.page.uid),
 		signal: extractSignalFromReviewBlock(block),
 		uid: block.uid,
 		string: block.string,
@@ -77,7 +67,8 @@ const extractHistoryFromQueryResult = (result) => {
 
 const isDue = (card, dateBasis) =>
 	card.history.length > 0
-		? card.history.some((review) => {
+		? // if one history unit contains no signal and fits the date, the card is due
+		  card.history.some((review) => {
 				return !review.signal && new Date(review.date) <= dateBasis;
 		  })
 		: true;
@@ -90,10 +81,10 @@ const createQueryForAllPermissibleCards = (settings) => `[
 			  {:block/refs [:node/title]} 
 			  {:block/_refs 
 				[:block/uid :block/string 
-					{:block/_children 
+				 {:block/_children 
 						[:block/uid {:block/refs [:node/title]}]} 
-					{:block/refs [:node/title]} 
-					{:block/page [:block/uid]}]}
+				 {:block/refs [:node/title]} 
+				 {:block/page [:block/uid]}]}
 			  {:block/_children ...}
 			])
 			:where 
@@ -107,6 +98,10 @@ const createQueryForAllPermissibleCards = (settings) => `[
 				[?card :block/refs ?queryPage])
 			]`;
 
+export const isNew = (res) => {
+	return res._refs ? res._refs.filter(isReviewBlock).length === 0 : true;
+};
+
 const queryDueCards = async (settings, dateBasis, asyncQueryFunction) => {
 	const allPermissibleCardsQuery = createQueryForAllPermissibleCards(settings);
 	const allPermissibleCardsQueryResults = await asyncQueryFunction(allPermissibleCardsQuery);
@@ -115,7 +110,7 @@ const queryDueCards = async (settings, dateBasis, asyncQueryFunction) => {
 			let res = result[0];
 			let card = {
 				uid: res.uid,
-				isNew: isNew(res, dateBasis),
+				isNew: isNew(res),
 				decks: getDecks(res, settings),
 				algorithm: getAlgorithm(res, settings),
 				string: res.string,
@@ -130,7 +125,12 @@ const getTodayQuery = (settings, todayUid) => `[
     :find (pull ?card 
       [:block/uid 
       {:block/refs [:node/title]} 
-      {:block/_refs [{:block/page [:block/uid]}]}]) 
+      {:block/_refs 
+		[
+			{:block/page [:block/uid]}
+			{:block/_children 
+				[:block/uid {:block/refs [:node/title]}]}
+		]}]) 
       (pull ?review [:block/refs])
     :where 
 	  [?srPage :node/title "${settings.mainTag}"]
@@ -143,7 +143,7 @@ const getTodayQuery = (settings, todayUid) => `[
       [?reviewParent :block/page ?todayPage] 
     ]`;
 
-const queryTodayReviewedCards = async (settings, dateBasis, asyncQueryFunction) => {
+const queryTodayReviewedCards = async (settings, asyncQueryFunction) => {
 	// Query for today's review
 	const todayUid = getRoamDate().uid;
 	const todayQuery = getTodayQuery(settings, todayUid);
@@ -151,10 +151,11 @@ const queryTodayReviewedCards = async (settings, dateBasis, asyncQueryFunction) 
 	return todayQueryResult
 		.filter((result) => result[1].refs.length == 2)
 		.map((result) => {
-			let card = {
-				uid: result[0].uid,
-				isNew: isNew(result[0], dateBasis),
-				decks: getDecks(result[0], settings),
+			const res = result[0];
+			const card = {
+				uid: res.uid,
+				isNew: isNew(res),
+				decks: getDecks(res, settings),
 			};
 			return card;
 		});
@@ -198,7 +199,7 @@ const filterCardsOverLimit = (settings, cards, todayReviewedCards) => {
 
 export const loadCards = async (hasLimits, settings, asyncQueryFunction, dateBasis = new Date()) => {
 	var cards = await queryDueCards(settings, dateBasis, asyncQueryFunction);
-	var todayReviewedCards = await queryTodayReviewedCards(settings, dateBasis, asyncQueryFunction);
+	var todayReviewedCards = await queryTodayReviewedCards(settings, asyncQueryFunction);
 
 	let extraCardsResult;
 	if (hasLimits) {
