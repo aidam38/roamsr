@@ -161,45 +161,104 @@ const queryTodayReviewedCards = async (settings, asyncQueryFunction) => {
 		});
 };
 
-const filterCardsOverLimit = (settings, cards, todayReviewedCards) => {
+export const isLastRelevantDeck = (currentDeckTag, iterationDeckTags, cardDecksTags) => {
+	// assumes the current deck tag is included in cardDecksTags
+	const curTagIndex = iterationDeckTags.indexOf(currentDeckTag);
+	const indicesInIteration = cardDecksTags.map((tag) => iterationDeckTags.indexOf(tag));
+	return indicesInIteration.filter((index) => index > curTagIndex).length === 0;
+};
+
+export const filterCardsOverLimit = (settings, cards, todayReviewedCards) => {
 	const extraCards = [[], []];
 	const filteredCards = [...cards];
-	for (let deck of settings.customDecks.concat(settings.defaultDeck)) {
-		var todayReviews = todayReviewedCards.reduce(
-			(a, card) => {
-				if (deck.tag ? card.decks.includes(deck.tag) : card.decks.length == 0) {
-					if (!a[2].includes(card.uid)) {
-						a[2].push(card.uid);
-						a[card.isNew ? 0 : 1]++;
-					}
-				}
-				return a;
-			},
-			[0, 0, []]
-		);
 
-		const limits = [deck.newCardLimit || 0, deck.reviewLimit || 0];
-		const a = [0, 0];
+	const resCardsUIDs = [];
+	const resCards = [];
 
-		for (let i = filteredCards.length - 1; i >= 0; i--) {
-			const card = filteredCards[i];
+	const decks = settings.customDecks.concat(settings.defaultDeck);
+	// to simplify the algorithm, we assume that the provided cards work with the provided limits
+	// in the case of multi-deck cards this might not always be the case
+	// example:
+	// if we have X cards that belong to deck1 with limit X AND deck2 with limit X-1,
+	// then the limit of deck2 will not be adhered to, the higher limit "wins"
+	// if we have multi-deck cards AND single-deck cards,
+	// then both limits might be adhered to depending on the ordering of the cards
+
+	const deckTags = decks.map((deck) => deck.tag);
+
+	for (let deck of decks) {
+		const reviewUIDs = [];
+		const todayReviews = [0, 0];
+		for (let i = 0; i < todayReviewedCards.length; i++) {
+			const card = todayReviewedCards[i];
 			if (deck.tag ? card.decks.includes(deck.tag) : card.decks.length == 0) {
-				var j = card.isNew ? 0 : 1;
-				if (a[j] >= limits[j] - todayReviews[j]) {
-					a[j]++;
-					extraCards[j].push(filteredCards.splice(i, 1));
+				// need to check, because a card can be reviewed multiple times per day
+				if (!reviewUIDs.includes(card.uid)) {
+					reviewUIDs.push(card.uid);
+					todayReviews[card.isNew ? 0 : 1]++;
 				}
 			}
 		}
-		extraCards[0] = extraCards[0].concat(extraCards[0]);
-		extraCards[1] = extraCards[1].concat(extraCards[1]);
+
+		// because we support multi-deck cards, we need to make sure we include already picked cards in the limit
+		let alreadyPickedNew = 0;
+		let alreadyPickedOld = 0;
+		if (deck.tag) {
+			const alreadyPicked = resCards.filter((card) => card.decks.includes(deck.tag));
+			alreadyPickedNew = alreadyPicked.filter((card) => card.isNew).length;
+			alreadyPickedOld = alreadyPicked.filter((card) => !card.isNew).length;
+		}
+
+		const limits = [
+			deck.newCardLimit !== undefined ? Math.max(0, deck.newCardLimit - todayReviews[0] - alreadyPickedNew) : Infinity,
+			deck.reviewLimit !== undefined ? Math.max(0, deck.reviewLimit - todayReviews[1] - alreadyPickedOld) : Infinity,
+		];
+
+		for (let i = filteredCards.length - 1; i >= 0; i--) {
+			const card = filteredCards[i];
+
+			if (deck.tag ? card.decks.includes(deck.tag) : card.decks.length == 0) {
+				const j = card.isNew ? 0 : 1;
+
+				// with multi-deck cards its possible that the card was already added
+				if (!resCardsUIDs.includes(card.uid)) {
+					if (limits[j] === Infinity || limits[j] > 0) {
+						resCards.push(card);
+						// for performance we maintain a second UID arr
+						resCardsUIDs.push(card.uid);
+
+						if (limits[j] !== Infinity) {
+							limits[j]--;
+						}
+					} else {
+						// card is only in default deck
+						if (!deck.tag) {
+							// TODO: remove this array enclosure after checking if its really not used anywhere
+							extraCards[j].push([card]);
+						}
+						// if multiple decks then only the last deck should put it into the extraCards
+						// because otherwise a different deck might be able to still use it!
+						else if (card.decks.length > 1) {
+							if (isLastRelevantDeck(deck.tag, deckTags, card.decks)) {
+								// TODO: remove this array enclosure after checking if its really not used anywhere
+								extraCards[j].push([card]);
+							}
+						} else {
+							// single deck case
+							// TODO: remove this array enclosure after checking if its really not used anywhere
+							extraCards[j].push([card]);
+						}
+					}
+				}
+			}
+		}
 	}
-	return { extraCards, filteredCards };
+	return { extraCards, filteredCards: resCards };
 };
 
 export const loadCards = async (hasLimits, settings, asyncQueryFunction, dateBasis = new Date()) => {
-	var cards = await queryDueCards(settings, dateBasis, asyncQueryFunction);
-	var todayReviewedCards = await queryTodayReviewedCards(settings, asyncQueryFunction);
+	let cards = await queryDueCards(settings, dateBasis, asyncQueryFunction);
+	const todayReviewedCards = await queryTodayReviewedCards(settings, asyncQueryFunction);
 
 	let extraCardsResult;
 	if (hasLimits) {
