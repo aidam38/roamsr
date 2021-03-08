@@ -2,27 +2,30 @@ import { ankiScheduler } from "./ankiScheduler";
 import { dailyPageUIDToCrossBrowserDate, getRoamDate } from "./helperFunctions";
 
 const recurDeck = (part) => {
-	var result = [];
+	const result = [];
+	// decks are tags, so we need to evaluate the included tags
 	if (part.refs) result.push(...part.refs);
+	// if this query result has _children, it might be a review-block
+	// so to get the real tags we need to recur until we find the original
 	if (part._children && part._children.length > 0) result.push(...recurDeck(part._children[0]));
 	return result;
 };
 
 const getDecks = (res, settings) => {
-	var possibleDecks = recurDeck(res).map((deck) => deck.title);
+	const possibleDecks = recurDeck(res).map((deck) => deck.title);
 	return possibleDecks.filter((deckTag) => settings.customDecks.map((customDeck) => customDeck.tag).includes(deckTag));
 };
 
 const getAlgorithm = (res, settings) => {
-	let decks = getDecks(res, settings);
+	const decks = getDecks(res, settings);
 
 	let preferredDeck;
 	if (decks && decks.length > 0) {
 		preferredDeck = settings.customDecks.filter((customDeck) => customDeck.tag == decks[decks.length - 1])[0];
 	} else preferredDeck = settings.defaultDeck;
 
-	let scheduler = preferredDeck.scheduler || preferredDeck.algorithm;
-	let config = preferredDeck.config;
+	const scheduler = preferredDeck.scheduler || preferredDeck.algorithm;
+	const config = preferredDeck.config;
 
 	let algorithm;
 	if (!scheduler || scheduler === "anki") {
@@ -221,6 +224,7 @@ export const filterCardsOverLimit = (settings, cards, todayReviewedCards) => {
 				const j = card.isNew ? 0 : 1;
 
 				// with multi-deck cards its possible that the card was already added
+				// because we include this case in the limits, we dont need to do anything
 				if (!resCardsUIDs.includes(card.uid)) {
 					if (limits[j] === Infinity || limits[j] > 0) {
 						resCards.push(card);
