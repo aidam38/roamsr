@@ -99,7 +99,7 @@ export const addShowAnswerButton = () => {
 		className: "bp3-button roamsr-container__response-area__show-answer-button roamsr-button",
 		innerHTML: "Show answer.",
 		onclick: () => {
-			showAnswerAndCloze(false);
+			showAnswerAndCloze();
 			addResponseButtons();
 		},
 	});

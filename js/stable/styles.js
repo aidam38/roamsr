@@ -81,14 +81,20 @@ export const setCustomStyle = (yes) => {
 	}
 };
 
-export const showAnswerAndCloze = (yes) => {
-	var styleId = "roamsr-css-mainview";
-	var element = document.getElementById(styleId);
-	if (element) element.remove();
+const roamsrMainviewCSSID = "roamsr-css-mainview";
 
-	if (yes) {
-		var clozeStyle = roamsr.settings.clozeStyle || "highlight";
-		var style = `
+const removeRoamsrMainviewCSS = () => {
+	const element = document.getElementById(roamsrMainviewCSSID);
+	if (element) element.remove();
+};
+
+export const showAnswerAndCloze = removeRoamsrMainviewCSS;
+
+export const hideAnswerAndCloze = () => {
+	removeRoamsrMainviewCSS();
+
+	const clozeStyle = roamsr.settings.clozeStyle || "highlight";
+	const style = `
     .roam-article .rm-reference-main,
     .roam-article .rm-block-children
     {
@@ -100,10 +106,9 @@ export const showAnswerAndCloze = (yes) => {
       color: #cccccc;
     }`;
 
-		var basicStyles = Object.assign(document.createElement("style"), {
-			id: styleId,
-			innerHTML: style,
-		});
-		document.getElementsByTagName("head")[0].appendChild(basicStyles);
-	}
+	const basicStyles = Object.assign(document.createElement("style"), {
+		id: roamsrMainviewCSSID,
+		innerHTML: style,
+	});
+	document.getElementsByTagName("head")[0].appendChild(basicStyles);
 };

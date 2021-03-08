@@ -2,7 +2,7 @@ import { removeSelector, goToUid, sleep } from "./helperFunctions";
 import { addKeyListener, removeKeyListener } from "./keybindings";
 import { loadCards } from "./loadingCards";
 import { goToCurrentCard } from "./mainFunctions";
-import { setCustomStyle, showAnswerAndCloze } from "./styles";
+import { showAnswerAndCloze, setCustomStyle } from "./styles";
 import { addWidget, removeContainer, removeReturnButton, updateCounters } from "./uiElements";
 
 const defaultSettings = {
@@ -79,7 +79,7 @@ export const endSession = async () => {
 		removeContainer();
 		removeReturnButton();
 		setCustomStyle(false);
-		showAnswerAndCloze(false);
+		showAnswerAndCloze();
 		removeKeyListener();
 		goToUid();
 

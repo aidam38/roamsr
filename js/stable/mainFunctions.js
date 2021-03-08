@@ -1,6 +1,6 @@
 import { getRoamDate, sleep, createUid, goToUid } from "./helperFunctions";
 import { getCurrentCard, endSession } from "./sessions";
-import { showAnswerAndCloze } from "./styles";
+import { hideAnswerAndCloze, showAnswerAndCloze } from "./styles";
 import {
 	updateCounters,
 	removeReturnButton,
@@ -143,7 +143,7 @@ export const stepToNext = async () => {
 
 export const goToCurrentCard = async () => {
 	window.onhashchange = () => {};
-	showAnswerAndCloze(true);
+	hideAnswerAndCloze();
 	removeReturnButton();
 	var doStuff = async () => {
 		goToUid(getCurrentCard().uid);
@@ -162,7 +162,7 @@ export const goToCurrentCard = async () => {
 	window.onhashchange = () => {
 		removeContainer();
 		addReturnButton();
-		showAnswerAndCloze(false);
+		showAnswerAndCloze();
 		window.onhashchange = () => {};
 	};
 };

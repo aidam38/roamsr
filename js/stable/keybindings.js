@@ -39,7 +39,7 @@ export const processKey = (e) => {
 	}
 
 	if (e.code == "Space") {
-		showAnswerAndCloze(false);
+		showAnswerAndCloze();
 		addResponseButtons();
 		return;
 	}
