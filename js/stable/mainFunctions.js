@@ -116,19 +116,22 @@ export const responseHandler = async (card, interval, signal) => {
 	}
 };
 
-export const flagCard = () => {
-	var card = getCurrentCard();
-	window.roamAlphaAPI.updateBlock({
+export const flagCard = async () => {
+	const card = getCurrentCard();
+
+	await window.roamAlphaAPI.updateBlock({
 		block: {
 			uid: card.uid,
 			string: card.string + " #" + roamsr.settings.flagTag,
 		},
 	});
 
-	var j = getCurrentCard().isNew ? 0 : 1;
+	const j = getCurrentCard().isNew ? 0 : 1;
 
-	var extraCard = roamsr.state.extraCards[j].shift();
+	const extraCard = roamsr.state.extraCards[j].shift();
 	if (extraCard) roamsr.state.queue.push(extraCard);
+
+	await stepToNext();
 };
 
 export const stepToNext = async () => {

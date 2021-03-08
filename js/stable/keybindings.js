@@ -3,6 +3,7 @@ import { endSession, getCurrentCard } from "./sessions";
 import { showAnswerAndCloze } from "./styles";
 import { addResponseButtons } from "./uiElements";
 
+// note: changing these requires reloading Roam because of the keylistener
 export const processKey = (e) => {
 	// console.log("alt: " + e.altKey + "  shift: " + e.shiftKey + "  ctrl: " + e.ctrlKey + "   code: " + e.code + "   key: " + e.key);
 	if (document.activeElement.type == "textarea" || !location.href.includes(getCurrentCard().uid)) {
@@ -45,10 +46,7 @@ export const processKey = (e) => {
 	}
 
 	if (e.code == "KeyF") {
-		// TODO: bug flagCard returns void!
-		flagCard().then(() => {
-			stepToNext();
-		});
+		flagCard();
 		return;
 	}
 
