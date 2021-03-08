@@ -2,7 +2,7 @@ import { removeSelector, goToUid, sleep } from "./helperFunctions";
 import { addKeyListener, removeKeyListener } from "./keybindings";
 import { loadCards } from "./loadingCards";
 import { goToCurrentCard } from "./mainFunctions";
-import { showAnswerAndCloze, setCustomStyle } from "./styles";
+import { showAnswerAndCloze, setCustomStyle, removeCustomStyle } from "./styles";
 import { addWidget, removeContainer, removeReturnButton, updateCounters } from "./uiElements";
 
 const defaultSettings = {
@@ -42,7 +42,7 @@ export const startSession = async () => {
 	if (roamsr.state && roamsr.state.queue.length > 0) {
 		console.log("Starting session.");
 
-		setCustomStyle(true);
+		setCustomStyle();
 
 		// Hide left sidebar
 		try {
@@ -78,7 +78,7 @@ export const endSession = async () => {
 	var doStuff = async () => {
 		removeContainer();
 		removeReturnButton();
-		setCustomStyle(false);
+		removeCustomStyle();
 		showAnswerAndCloze();
 		removeKeyListener();
 		goToUid();

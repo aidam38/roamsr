@@ -51,33 +51,36 @@ export const addBasicStyles = () => {
 	document.getElementsByTagName("head")[0].appendChild(basicStyles);
 };
 
-export const setCustomStyle = (yes) => {
-	var styleId = "roamsr-css-custom";
-	var element = document.getElementById(styleId);
+const roamsrCustomStyleCSSID = "roamsr-css-custom";
+
+export const removeCustomStyle = () => {
+	const element = document.getElementById(roamsrCustomStyleCSSID);
 	if (element) element.remove();
+};
 
-	if (yes) {
-		// Query new style
-		var styleQuery = window.roamAlphaAPI.q(
-			`[:find (pull ?style [:block/string]) :where [?roamsr :node/title "roam\/sr"] [?roamsr :block/children ?css] [?css :block/refs ?roamcss] [?roamcss :node/title "roam\/css"] [?css :block/children ?style]]`
-		);
+export const setCustomStyle = () => {
+	removeCustomStyle();
 
-		// this is necessary because having three ` breaks Roam-code-blocks
-		// other solutions have lead to the minifier appending three `
-		const replaceStrPartial = "``";
+	// Query new style
+	const styleQuery = window.roamAlphaAPI.q(
+		`[:find (pull ?style [:block/string]) :where [?roamsr :node/title "roam\/sr"] [?roamsr :block/children ?css] [?css :block/refs ?roamcss] [?roamcss :node/title "roam\/css"] [?css :block/children ?style]]`
+	);
 
-		if (styleQuery && styleQuery.length != 0) {
-			var customStyle = styleQuery[0][0].string
-				.replace("`" + replaceStrPartial + "css", "")
-				.replace("`" + replaceStrPartial, "");
+	// this is necessary because having three ` breaks Roam-code-blocks
+	// other solutions have lead to the minifier appending three `
+	const replaceStrPartial = "``";
 
-			var roamsrCSS = Object.assign(document.createElement("style"), {
-				id: styleId,
-				innerHTML: customStyle,
-			});
+	if (styleQuery && styleQuery.length != 0) {
+		const customStyle = styleQuery[0][0].string
+			.replace("`" + replaceStrPartial + "css", "")
+			.replace("`" + replaceStrPartial, "");
 
-			document.getElementsByTagName("head")[0].appendChild(roamsrCSS);
-		}
+		const roamsrCSS = Object.assign(document.createElement("style"), {
+			id: roamsrCustomStyleCSSID,
+			innerHTML: customStyle,
+		});
+
+		document.getElementsByTagName("head")[0].appendChild(roamsrCSS);
 	}
 };
 
