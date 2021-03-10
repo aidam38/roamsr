@@ -1,6 +1,7 @@
 import { getRoamDate, sleep, createUid, goToUid } from "./helperFunctions";
 import { getCurrentCard, endSession } from "./sessions";
-import { hideAnswerAndCloze, showAnswerAndCloze } from "./styles";
+import { addCardToQueue, addExtraCardToQueue, incrementCurrentCardIndex, inquiryState, reviewState } from "./state";
+import { hideAnswerAndCloze, removeRoamsrMainviewCSS } from "./styles";
 import {
 	updateCounters,
 	removeReturnButton,
@@ -112,7 +113,7 @@ export const responseHandler = async (card, interval, signal) => {
 		var newCard = card;
 		newCard.history = hist;
 		newCard.isNew = false;
-		roamsr.state.queue.push(newCard);
+		addCardToQueue(newCard);
 	}
 };
 
@@ -128,29 +129,33 @@ export const flagCard = async () => {
 
 	const j = getCurrentCard().isNew ? 0 : 1;
 
-	const extraCard = roamsr.state.extraCards[j].shift();
-	if (extraCard) roamsr.state.queue.push(extraCard);
+	addExtraCardToQueue(j);
 
 	await stepToNext();
 };
 
 export const stepToNext = async () => {
+	// TODO: access
 	if (roamsr.state.currentIndex + 1 >= roamsr.state.queue.length) {
 		endSession();
 	} else {
-		roamsr.state.currentIndex++;
+		incrementCurrentCardIndex();
 		goToCurrentCard();
 	}
+	// TODO: access
 	updateCounters(roamsr.state);
 };
 
 export const goToCurrentCard = async () => {
+	reviewState();
+
 	window.onhashchange = () => {};
 	hideAnswerAndCloze();
 	removeReturnButton();
 	var doStuff = async () => {
 		goToUid(getCurrentCard().uid);
 		await sleep(50);
+		// TODO: access
 		addContainer(roamsr.state);
 		addShowAnswerButton();
 	};
@@ -163,9 +168,10 @@ export const goToCurrentCard = async () => {
 	await doStuff();
 
 	window.onhashchange = () => {
+		inquiryState();
 		removeContainer();
 		addReturnButton();
-		showAnswerAndCloze();
+		removeRoamsrMainviewCSS();
 		window.onhashchange = () => {};
 	};
 };

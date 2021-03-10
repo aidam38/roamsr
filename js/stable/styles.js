@@ -1,3 +1,5 @@
+import { testState } from "./state";
+
 const basicCSS = `
 .roamsr-widget__review-button {
   color: #5C7080 !important;
@@ -86,12 +88,17 @@ export const setCustomStyle = () => {
 
 const roamsrMainviewCSSID = "roamsr-css-mainview";
 
-const removeRoamsrMainviewCSS = () => {
+// we use to nearly identical functions here because they have different intentions
+// as expressed in the state-set call
+export const removeRoamsrMainviewCSS = () => {
 	const element = document.getElementById(roamsrMainviewCSSID);
 	if (element) element.remove();
 };
 
-export const showAnswerAndCloze = removeRoamsrMainviewCSS;
+export const showAnswerAndCloze = () => {
+	testState();
+	removeRoamsrMainviewCSS();
+};
 
 export const hideAnswerAndCloze = () => {
 	removeRoamsrMainviewCSS();

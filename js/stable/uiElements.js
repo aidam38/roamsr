@@ -2,6 +2,7 @@ import { removeSelector, getIntervalHumanReadable } from "./helperFunctions";
 import { loadCards } from "./loadingCards";
 import { flagCard, stepToNext, responseHandler, goToCurrentCard } from "./mainFunctions";
 import { getCurrentCard, startSession } from "./sessions";
+import { reviewState, setCards, toggleLimitActivation } from "./state";
 import { showAnswerAndCloze } from "./styles";
 
 // COMMON
@@ -177,13 +178,16 @@ export const createWidget = () => {
 	});
 	reviewButton.style.cssText = "padding: 2px 8px;";
 
+	// TODO: access
 	var counter = Object.assign(getCounter(roamsr.state), {
 		className: "bp3-button bp3-minimal roamsr-counter",
 		onclick: async () => {
-			roamsr.state.limits = !roamsr.state.limits;
+			// TODO: maybe bug with limits?
+			toggleLimitActivation();
+			// TODO: access
 			const { cards, extraCards } = await loadCards(roamsr.state.limits, roamsr.settings, window.roamAlphaAPI.q);
-			roamsr.state.queue = cards;
-			roamsr.state.extraCards = extraCards;
+			setCards(cards, extraCards);
+			// TODO: access
 			updateCounters(roamsr.state);
 		},
 	});

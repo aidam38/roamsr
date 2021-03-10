@@ -6,13 +6,14 @@
 
 import { loadSettings, loadState } from "./sessions";
 import { buttonClickHandler } from "./srButton";
+import { standbyState } from "./state";
 import { addBasicStyles } from "./styles";
 import { addWidget } from "./uiElements";
 
 export const init = () => {
 	var VERSION = "v1.0.1";
 
-	if (!window.roamsr) window.roamsr = {};
+	if (!window.roamsr) window.roamsr = { state: {}, settings: {} };
 
 	document.addEventListener("click", buttonClickHandler, false);
 
@@ -23,6 +24,8 @@ export const init = () => {
 	loadState(-1).then(() => {
 		addWidget();
 	});
+
+	standbyState();
 
 	console.log("🗃️ Successfully loaded roam/sr " + VERSION + ".");
 };

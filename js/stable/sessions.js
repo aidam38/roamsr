@@ -2,7 +2,8 @@ import { removeSelector, goToUid, sleep } from "./helperFunctions";
 import { addKeyListener, removeKeyListener } from "./keybindings";
 import { loadCards } from "./loadingCards";
 import { goToCurrentCard } from "./mainFunctions";
-import { showAnswerAndCloze, setCustomStyle, removeCustomStyle } from "./styles";
+import { setCards, setCurrentCardIndex, setLimitActivation, standbyState } from "./state";
+import { setCustomStyle, removeCustomStyle, removeRoamsrMainviewCSS } from "./styles";
 import { addWidget, removeContainer, removeReturnButton, updateCounters } from "./uiElements";
 
 const defaultSettings = {
@@ -23,22 +24,21 @@ export const loadSettings = () => {
 };
 
 export const loadState = async (i) => {
-	roamsr.state = {
-		limits: true,
-		currentIndex: i,
-	};
+	setLimitActivation(true);
+	setCurrentCardIndex(i);
 	const { cards, extraCards } = await loadCards(roamsr.state.limits, roamsr.settings, window.roamAlphaAPI.q);
-	roamsr.state.queue = cards;
-	roamsr.state.extraCards = extraCards;
+	setCards(cards, extraCards);
 	return;
 };
 
 export const getCurrentCard = () => {
+	// TODO: access
 	var card = roamsr.state.queue[roamsr.state.currentIndex];
 	return card ? card : {};
 };
 
 export const startSession = async () => {
+	// TODO: access
 	if (roamsr.state && roamsr.state.queue.length > 0) {
 		console.log("Starting session.");
 
@@ -53,6 +53,7 @@ export const startSession = async () => {
 		await loadState(0);
 
 		console.log("The queue: ");
+		// TODO: access
 		console.log(roamsr.state.queue);
 
 		await goToCurrentCard();
@@ -70,6 +71,8 @@ export const endSession = async () => {
 	window.onhashchange = () => {};
 	console.log("Ending sesion.");
 
+	standbyState();
+
 	// Change widget
 	removeSelector(".roamsr-widget");
 	addWidget();
@@ -79,11 +82,12 @@ export const endSession = async () => {
 		removeContainer();
 		removeReturnButton();
 		removeCustomStyle();
-		showAnswerAndCloze();
+		removeRoamsrMainviewCSS();
 		removeKeyListener();
 		goToUid();
 
 		await loadState(-1);
+		// TODO: access
 		updateCounters(roamsr.state);
 	};
 
@@ -92,5 +96,6 @@ export const endSession = async () => {
 	await doStuff(); // ... again to make sure
 	await sleep(1000);
 	await loadState(-1);
+	// TODO: access
 	updateCounters(roamsr.state); // ... once again
 };
