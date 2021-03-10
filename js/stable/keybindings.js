@@ -25,12 +25,8 @@ const handleNthResponse = async (n, responses) => {
 	// TODO: we shouldnt need to check for having responses because we are in the test-state
 	if (n >= 0) {
 		const res = responses[n];
-		if (res.interval != 0) {
-			responseHandler(getCurrentCard(), res.interval, res.signal.toString());
-		} else {
-			await responseHandler(getCurrentCard(), res.interval, res.signal.toString());
-		}
-		stepToNext();
+		await responseHandler(getCurrentCard(), res.interval, res.signal.toString());
+		await stepToNext();
 	}
 };
 
@@ -54,8 +50,11 @@ const testCodeMap = {
 	...digitsCodeMap,
 	...lettersCodeMap,
 	...reviewAndTestCodeMap,
+	// TODO: make it depend on algorithm? "good" = space is an anki-default
+	Space: () => handleNthResponse(2, getCurrentCard().algorithm(getCurrentCard().history)),
 };
 
+// TODO: code maps make it more trivial to make keybindings configurable
 const statusCodeMaps = { review: reviewCodeMap, test: testCodeMap };
 
 // note: changing these requires reloading Roam because of the keylistener
