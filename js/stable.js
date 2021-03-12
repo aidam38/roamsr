@@ -919,7 +919,7 @@ roamsr.processKey = (e) => {
       return;
     }
 
-    if (e.code == "KeyS") {
+    if (e.code == "KeyS" && !e.ctrlKey && !e.shiftKey) {
       roamsr.stepToNext();
       return;
     }
