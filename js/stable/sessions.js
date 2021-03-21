@@ -8,7 +8,7 @@ import { addWidget, removeContainer, removeReturnButton, updateCounters } from "
 
 const defaultSettings = {
 	closeLeftSideBar: true,
-	mainTag: "sr",
+	mainTags: ["sr"],
 	flagTag: "f",
 	clozeStyle: "highlight", // "highlight" or "block-ref"
 	defaultDeck: {

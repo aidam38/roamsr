@@ -76,6 +76,8 @@ const isDue = (card, dateBasis) =>
 		  })
 		: true;
 
+const srPageTagsToClause = (tags) => "(or " + tags.map((tag) => `[?srPage :node/title "${tag}"]`).join("\n") + ")";
+
 //cards with the flag-tag or the "query"-tag are not permissible
 const createQueryForAllPermissibleCards = (settings) => `[
 			:find (pull ?card [
@@ -91,7 +93,7 @@ const createQueryForAllPermissibleCards = (settings) => `[
 			  {:block/_children ...}
 			])
 			:where 
-			  [?srPage :node/title "${settings.mainTag}"] 
+			  ${srPageTagsToClause(settings.mainTags)}
 			  [?card :block/refs ?srPage] 
 			  (not-join [?card] 
 				[?flagPage :node/title "${settings.flagTag}"]
@@ -136,8 +138,8 @@ const getTodayQuery = (settings, todayUid) => `[
 		]}]) 
       (pull ?review [:block/refs])
     :where 
-	  [?srPage :node/title "${settings.mainTag}"]
-	  [?card :block/refs ?srPage] 
+	  ${srPageTagsToClause(settings.mainTags)}
+      [?card :block/refs ?srPage] 
       [?review :block/refs ?card] 
       [?reviewPage :node/title "roam/sr/review"] 
       [?reviewParent :block/refs ?reviewPage] 

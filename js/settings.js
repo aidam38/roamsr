@@ -6,9 +6,9 @@ window.roamsrUserSettings = {};
 // Type: Boolean
 roamsrUserSettings.closeLeftSideBar = true;
 
-// Main tag used to add cards.
-// Type: String
-roamsrUserSettings.mainTag = "sr";
+// Main tags used to add cards.
+// Type: Array of Strings
+roamsrUserSettings.mainTags = ["sr"];
 
 // Tag used to flag cards.
 // Cardblocks with this tag won't get shown in review (meant for rewrite)
