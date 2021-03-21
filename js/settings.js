@@ -2,6 +2,10 @@ window.roamsrUserSettings = {};
 
 /* ====== MAIN SETTINGS ====== */
 
+// If the left sidebar should be closed when starting a session
+// Type: Boolean
+roamsrUserSettings.closeLeftSideBar = true;
+
 // Main tag used to add cards.
 // Type: String
 roamsrUserSettings.mainTag = "sr";
