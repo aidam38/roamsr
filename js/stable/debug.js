@@ -15,7 +15,7 @@ import { loadSettings, loadState, getCurrentCard, startSession, endSession } fro
 import { buttonClickHandler } from "./srButton";
 
 // need this to force execution
-import { init } from "./stable";
+import { init } from "./main";
 
 import { addBasicStyles, setCustomStyle, showAnswerAndCloze } from "./styles";
 import {

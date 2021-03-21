@@ -52,17 +52,18 @@ const testCodeMap = {
 	...digitsCodeMap,
 	...lettersCodeMap,
 	...reviewAndTestCodeMap,
-	// TODO: make it depend on algorithm? "good" = space is an anki-default
 	Space: () => handleNthResponse(2, getCurrentCard().algorithm(getCurrentCard().history)),
 };
 
-// TODO: code maps make it more trivial to make keybindings configurable
 const statusCodeMaps = { review: reviewCodeMap, test: testCodeMap };
 
 // note: changing these requires reloading Roam because of the keylistener
 export const processKey = (e) => {
 	// if we are editing, dont process
 	if (document.activeElement.type === "textarea") return;
+
+	// this is not be necessary anymore because we have status
+	// !location.href.includes(getCurrentCard().uid)
 
 	const statusCodeMap = statusCodeMaps[roamsr.state.status];
 	if (statusCodeMap) {
@@ -71,9 +72,6 @@ export const processKey = (e) => {
 			func(e);
 		}
 	}
-
-	// TODO: this should not be necessary anymore because we have status, maybe race-condition?
-	// !location.href.includes(getCurrentCard().uid)
 };
 
 export const processKeyAlways = (e) => {
