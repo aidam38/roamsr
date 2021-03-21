@@ -55,7 +55,6 @@ export const exposeInternalAPI = () => {
 
 	/* ====== LOADING CARDS ====== */
 
-	// TODO: access
 	roamsr.loadCards = () => loadCards(roamsr.state.limits, roamsr.settings, window.roamAlphaAPI.q);
 
 	/* ====== STYLES ====== */
@@ -93,14 +92,11 @@ export const exposeInternalAPI = () => {
 	/* ====== UI ELEMENTS ====== */
 
 	// COMMON
-	// TODO: access
 	roamsr.getCounter = (deck) => getCounter(roamsr.state, deck);
 
-	// TODO: access
 	roamsr.updateCounters = () => updateCounters(roamsr.state);
 
 	// CONTAINER
-	// TODO: access
 	roamsr.addContainer = () => addContainer(roamsr.state);
 
 	roamsr.removeContainer = removeContainer;

@@ -135,14 +135,12 @@ export const flagCard = async () => {
 };
 
 export const stepToNext = async () => {
-	// TODO: access
 	if (roamsr.state.currentIndex + 1 >= roamsr.state.queue.length) {
 		endSession();
 	} else {
 		incrementCurrentCardIndex();
 		goToCurrentCard();
 	}
-	// TODO: access
 	updateCounters(roamsr.state);
 };
 
@@ -155,7 +153,6 @@ export const goToCurrentCard = async () => {
 	var doStuff = async () => {
 		goToUid(getCurrentCard().uid);
 		await sleep(50);
-		// TODO: access
 		addContainer(roamsr.state);
 		addShowAnswerButton();
 	};

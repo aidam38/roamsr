@@ -178,16 +178,12 @@ export const createWidget = () => {
 	});
 	reviewButton.style.cssText = "padding: 2px 8px;";
 
-	// TODO: access
 	var counter = Object.assign(getCounter(roamsr.state), {
 		className: "bp3-button bp3-minimal roamsr-counter",
 		onclick: async () => {
-			// TODO: maybe bug with limits?
 			toggleLimitActivation();
-			// TODO: access
 			const { cards, extraCards } = await loadCards(roamsr.state.limits, roamsr.settings, window.roamAlphaAPI.q);
 			setCards(cards, extraCards);
-			// TODO: access
 			updateCounters(roamsr.state);
 		},
 	});

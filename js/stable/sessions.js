@@ -33,13 +33,11 @@ export const loadState = async (i) => {
 };
 
 export const getCurrentCard = () => {
-	// TODO: access
 	var card = roamsr.state.queue[roamsr.state.currentIndex];
 	return card ? card : {};
 };
 
 export const startSession = async () => {
-	// TODO: access
 	if (roamsr.state && roamsr.state.queue.length > 0) {
 		console.log("Starting session.");
 
@@ -64,7 +62,6 @@ export const startSession = async () => {
 		await loadState(0);
 
 		console.log("The queue: ");
-		// TODO: access
 		console.log(roamsr.state.queue);
 
 		await goToCurrentCard();
@@ -98,7 +95,6 @@ export const endSession = async () => {
 		goToUid();
 
 		await loadState(-1);
-		// TODO: access
 		updateCounters(roamsr.state);
 	};
 
@@ -107,6 +103,5 @@ export const endSession = async () => {
 	await doStuff(); // ... again to make sure
 	await sleep(1000);
 	await loadState(-1);
-	// TODO: access
 	updateCounters(roamsr.state); // ... once again
 };
