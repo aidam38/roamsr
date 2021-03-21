@@ -239,20 +239,17 @@ export const filterCardsOverLimit = (settings, cards, todayReviewedCards) => {
 					} else {
 						// card is only in default deck
 						if (!deck.tag) {
-							// TODO: remove this array enclosure after checking if its really not used anywhere
-							extraCards[j].push([card]);
+							extraCards[j].push(card);
 						}
 						// if multiple decks then only the last deck should put it into the extraCards
 						// because otherwise a different deck might be able to still use it!
 						else if (card.decks.length > 1) {
 							if (isLastRelevantDeck(deck.tag, deckTags, card.decks)) {
-								// TODO: remove this array enclosure after checking if its really not used anywhere
-								extraCards[j].push([card]);
+								extraCards[j].push(card);
 							}
 						} else {
 							// single deck case
-							// TODO: remove this array enclosure after checking if its really not used anywhere
-							extraCards[j].push([card]);
+							extraCards[j].push(card);
 						}
 					}
 				}
