@@ -5,9 +5,11 @@ import { addResponseButtons } from "./uiElements";
 
 const reviewAndTestCodeMap = {
 	KeyF: flagCard,
-	KeyS: stepToNext,
+	KeyS: (e) => {
+		if (!e.ctrlKey && !e.shiftKey) stepToNext();
+	},
 	KeyD: (e) => {
-		// TODO: this does not work in any version because alt+d ist opening the daily page
+		// TODO: this does not work in any version because alt+d is opening the daily page
 		if (e.altKey) endSession();
 	},
 };
