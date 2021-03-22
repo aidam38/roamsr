@@ -8,6 +8,7 @@ import { addWidget, removeContainer, removeReturnButton, updateCounters } from "
 
 const defaultSettings = {
 	closeLeftSideBar: true,
+	startWithNewCards: true,
 	mainTags: ["sr"],
 	flagTag: "f",
 	clozeStyle: "highlight", // "highlight" or "block-ref"

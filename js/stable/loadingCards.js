@@ -272,8 +272,15 @@ export const loadCards = async (hasLimits, settings, asyncQueryFunction, dateBas
 		extraCardsResult = [[], []];
 	}
 
-	// TODO: extraCards are not sorted?
-	// Sort (new to front)
-	cards = cards.sort((a, b) => a.history.length - b.history.length);
+	if (settings.startWithNewCards) {
+		cards.sort((a, b) => a.history.length - b.history.length);
+		extraCardsResult[0].sort((a, b) => a.history.length - b.history.length);
+		extraCardsResult[1].sort((a, b) => a.history.length - b.history.length);
+	} else {
+		cards.sort((a, b) => b.history.length - a.history.length);
+		extraCardsResult[0].sort((a, b) => b.history.length - a.history.length);
+		extraCardsResult[1].sort((a, b) => b.history.length - a.history.length);
+	}
+
 	return { extraCards: extraCardsResult, cards };
 };

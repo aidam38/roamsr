@@ -2,6 +2,10 @@ window.roamsrUserSettings = {};
 
 /* ====== MAIN SETTINGS ====== */
 
+// If we start with new or old cards
+// Type: Boolean
+roamsrUserSettings.startWithNewCards = true;
+
 // If the left sidebar should be closed when starting a session
 // Type: Boolean
 roamsrUserSettings.closeLeftSideBar = true;
