@@ -60,10 +60,10 @@ test("filterCardsOverLimit: defaultDeck", () => {
 	expect(res.extraCards.length).toBe(2);
 
 	expect(res.extraCards[0].length).toBe(1);
-	expect(res.extraCards[0][0]).toEqual([cards[0]]);
+	expect(res.extraCards[0][0]).toEqual(cards[0]);
 
 	expect(res.extraCards[1].length).toBe(1);
-	expect(res.extraCards[1][0]).toEqual([cards[2]]);
+	expect(res.extraCards[1][0]).toEqual(cards[2]);
 
 	expect(res.filteredCards).toEqual([cards[1]]);
 });
@@ -143,56 +143,38 @@ test("filterCardsOverLimit: multiple decks", () => {
 
 		// check that there are no duplicates
 		expect(new Set(res.filteredCards.map((card) => card.uid)).size).toBe(res.filteredCards.length);
-		expect(new Set(res.extraCards[0].map((arr) => arr[0].uid)).size).toBe(res.extraCards[0].length);
-		expect(new Set(res.extraCards[1].map((arr) => arr[0].uid)).size).toBe(res.extraCards[1].length);
+		expect(new Set(res.extraCards[0].map((v) => v.uid)).size).toBe(res.extraCards[0].length);
+		expect(new Set(res.extraCards[1].map((v) => v.uid)).size).toBe(res.extraCards[1].length);
 
 		expect(res.extraCards.length).toBe(2);
 
 		// check if cards are sorted in the correct extraCards position
-		expect(filterForNew(res.extraCards[0].map((arr) => arr[0])).length).toBe(res.extraCards[0].length);
-		expect(filterForOld(res.extraCards[1].map((arr) => arr[0])).length).toBe(res.extraCards[1].length);
+		expect(filterForNew(res.extraCards[0]).length).toBe(res.extraCards[0].length);
+		expect(filterForOld(res.extraCards[1]).length).toBe(res.extraCards[1].length);
 
 		const defaultResFiltered = filterForDefault(res.filteredCards);
 		const defaultResFilteredNew = filterForNew(defaultResFiltered);
 		const defaultResFilteredOld = filterForOld(defaultResFiltered);
-		const defaultResExtra0 = filterForDefault(res.extraCards[0].map((arr) => arr[0]));
-		const defaultResExtra1 = filterForDefault(res.extraCards[1].map((arr) => arr[0]));
+		const defaultResExtra0 = filterForDefault(res.extraCards[0]);
+		const defaultResExtra1 = filterForDefault(res.extraCards[1]);
 
 		const deck1ResFiltered = filterForDeck(res.filteredCards, "deck1");
 		const deck1ResFilteredNew = filterForNew(deck1ResFiltered);
 		const deck1ResFilteredOld = filterForOld(deck1ResFiltered);
-		const deck1ResExtra0 = filterForDeck(
-			res.extraCards[0].map((arr) => arr[0]),
-			"deck1"
-		);
-		const deck1ResExtra1 = filterForDeck(
-			res.extraCards[1].map((arr) => arr[0]),
-			"deck1"
-		);
+		const deck1ResExtra0 = filterForDeck(res.extraCards[0], "deck1");
+		const deck1ResExtra1 = filterForDeck(res.extraCards[1], "deck1");
 
 		const deck2ResFiltered = filterForDeck(res.filteredCards, "deck2");
 		const deck2ResFilteredNew = filterForNew(deck2ResFiltered);
 		const deck2ResFilteredOld = filterForOld(deck2ResFiltered);
-		const deck2ResExtra0 = filterForDeck(
-			res.extraCards[0].map((arr) => arr[0]),
-			"deck2"
-		);
-		const deck2ResExtra1 = filterForDeck(
-			res.extraCards[1].map((arr) => arr[0]),
-			"deck2"
-		);
+		const deck2ResExtra0 = filterForDeck(res.extraCards[0], "deck2");
+		const deck2ResExtra1 = filterForDeck(res.extraCards[1], "deck2");
 
 		const deck3ResFiltered = filterForDeck(res.filteredCards, "deck3");
 		const deck3ResFilteredNew = filterForNew(deck3ResFiltered);
 		const deck3ResFilteredOld = filterForOld(deck3ResFiltered);
-		const deck3ResExtra0 = filterForDeck(
-			res.extraCards[0].map((arr) => arr[0]),
-			"deck3"
-		);
-		const deck3ResExtra1 = filterForDeck(
-			res.extraCards[1].map((arr) => arr[0]),
-			"deck3"
-		);
+		const deck3ResExtra0 = filterForDeck(res.extraCards[0], "deck3");
+		const deck3ResExtra1 = filterForDeck(res.extraCards[1], "deck3");
 
 		// new expectations:
 
