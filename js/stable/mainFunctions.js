@@ -1,6 +1,13 @@
 import { getRoamDate, sleep, createUid, goToUid } from "./helperFunctions";
 import { getCurrentCard, endSession } from "./sessions";
-import { addCardToQueue, addExtraCardToQueue, incrementCurrentCardIndex, inquiryState, reviewState } from "./state";
+import {
+	addCardToQueue,
+	addExtraCardToQueue,
+	incrementCurrentCardIndex,
+	inquiryState,
+	reviewState,
+	standbyState,
+} from "./state";
 import { hideAnswerAndCloze, removeRoamsrMainviewCSS } from "./styles";
 import {
 	updateCounters,
@@ -145,7 +152,8 @@ export const stepToNext = async () => {
 };
 
 export const goToCurrentCard = async () => {
-	reviewState();
+	// change to standby first to prevent unwanted key processing
+	standbyState();
 
 	window.onhashchange = () => {};
 	hideAnswerAndCloze();
@@ -171,4 +179,6 @@ export const goToCurrentCard = async () => {
 		removeRoamsrMainviewCSS();
 		window.onhashchange = () => {};
 	};
+
+	reviewState();
 };

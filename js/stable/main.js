@@ -15,17 +15,17 @@ export const init = () => {
 
 	if (!window.roamsr) window.roamsr = { state: {}, settings: {} };
 
-	document.addEventListener("click", buttonClickHandler, false);
-
 	console.log("🗃️ Loading roam/sr " + VERSION + ".");
+
+	standbyState();
+
+	document.addEventListener("click", buttonClickHandler, false);
 
 	loadSettings();
 	addBasicStyles();
 	loadState(-1).then(() => {
 		addWidget();
 	});
-
-	standbyState();
 
 	console.log("🗃️ Successfully loaded roam/sr " + VERSION + ".");
 };
