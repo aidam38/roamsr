@@ -114,8 +114,7 @@ export const addResponseButtons = () => {
 
 	// Add new responses
 	var responses = getCurrentCard().algorithm(getCurrentCard().history);
-	for (let response of responses) {
-		const res = response;
+	for (let res of responses) {
 		var responseButton = Object.assign(document.createElement("button"), {
 			id: "roamsr-response-" + res.signal,
 			className: "bp3-button roamsr-container__response-area__response-button roamsr-button",
