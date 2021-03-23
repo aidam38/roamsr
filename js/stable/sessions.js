@@ -30,6 +30,7 @@ export const loadState = async (i) => {
 	setCurrentCardIndex(i);
 	const { cards, extraCards } = await loadCards(roamsr.state.limits, roamsr.settings, window.roamAlphaAPI.q);
 	setCards(cards, extraCards);
+	updateCounters(roamsr.state);
 	return;
 };
 
@@ -39,40 +40,42 @@ export const getCurrentCard = () => {
 };
 
 export const startSession = async () => {
-	if (roamsr.state && roamsr.state.queue.length > 0) {
-		console.log("Starting session.");
-
-		setCustomStyle();
-
+	if (roamsr.state) {
 		loadSettings();
-
-		if (roamsr.settings.closeLeftSideBar) {
-			// close left sidebar
-			try {
-				document.getElementsByClassName("bp3-icon-menu-closed")[0].click();
-				// note: currently the button for opening the sidebar is only clickable
-				// if we hover over it
-				// hover-events apparently cant be faked easily
-				// (https://stackoverflow.com/questions/17226676/how-do-i-simulate-a-mouseover-in-pure-javascript-that-activates-the-css-hover)
-				// so we just offer the setting-option for now
-				// at some point the API might include the left sidebar and not only the right
-				// then we could offer re-opening the left sidebar after the session
-			} catch (e) {}
-		}
-
 		await loadState(0);
 
-		console.log("The queue: ");
-		console.log(roamsr.state.queue);
+		if (roamsr.state.queue.length > 0) {
+			console.log("Starting session.");
 
-		await goToCurrentCard();
+			setCustomStyle();
 
-		addKeyListener();
+			if (roamsr.settings.closeLeftSideBar) {
+				// close left sidebar
+				try {
+					document.getElementsByClassName("bp3-icon-menu-closed")[0].click();
+					// note: currently the button for opening the sidebar is only clickable
+					// if we hover over it
+					// hover-events apparently cant be faked easily
+					// (https://stackoverflow.com/questions/17226676/how-do-i-simulate-a-mouseover-in-pure-javascript-that-activates-the-css-hover)
+					// so we just offer the setting-option for now
+					// at some point the API might include the left sidebar and not only the right
+					// then we could offer re-opening the left sidebar after the session
+				} catch (e) {}
+			}
 
-		// Change widget
-		var widget = document.querySelector(".roamsr-widget");
-		widget.innerHTML = "<div style='padding: 5px 0px'><span class='bp3-icon bp3-icon-cross'></span> END SESSION</div>";
-		widget.onclick = endSession;
+			console.log("The queue: ");
+			console.log(roamsr.state.queue);
+
+			await goToCurrentCard();
+
+			addKeyListener();
+
+			// Change widget
+			var widget = document.querySelector(".roamsr-widget");
+			widget.innerHTML =
+				"<div style='padding: 5px 0px'><span class='bp3-icon bp3-icon-cross'></span> END SESSION</div>";
+			widget.onclick = endSession;
+		}
 	}
 };
 
@@ -96,7 +99,6 @@ export const endSession = async () => {
 		goToUid();
 
 		await loadState(-1);
-		updateCounters(roamsr.state);
 	};
 
 	await doStuff();
@@ -104,5 +106,4 @@ export const endSession = async () => {
 	await doStuff(); // ... again to make sure
 	await sleep(1000);
 	await loadState(-1);
-	updateCounters(roamsr.state); // ... once again
 };
