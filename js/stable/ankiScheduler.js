@@ -1,4 +1,4 @@
-const defaultConfig = {
+export const defaultConfig = {
 	defaultFactor: 2.5,
 	firstFewIntervals: [1, 6],
 	factorModifier: 0.15,
@@ -89,7 +89,7 @@ const calcNewInterval = (config, prevFactor, prevInterval, delay, signal) => {
 	return Math.min(newInterval, config.maxInterval);
 };
 
-const calcNewFactorAndInterval = (config, prevFactor, prevInterval, delay, signal) => {
+export const calcNewFactorAndInterval = (config, prevFactor, prevInterval, delay, signal) => {
 	return [calcNewFactor(config, prevFactor, signal), calcNewInterval(config, prevFactor, prevInterval, delay, signal)];
 };
 
