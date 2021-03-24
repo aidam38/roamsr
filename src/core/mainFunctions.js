@@ -158,19 +158,11 @@ export const goToCurrentCard = async () => {
 	window.onhashchange = () => {};
 	hideAnswerAndCloze();
 	removeReturnButton();
-	var doStuff = async () => {
-		goToUid(getCurrentCard().uid);
-		await sleep(50);
-		addContainer(roamsr.state);
-		addShowAnswerButton();
-	};
 
-	await doStuff();
-	window.onhashchange = doStuff;
-
-	await sleep(500);
-
-	await doStuff();
+	goToUid(getCurrentCard().uid);
+	await sleep(50);
+	addContainer(roamsr.state);
+	addShowAnswerButton();
 
 	window.onhashchange = () => {
 		inquiryState();
