@@ -1,5 +1,6 @@
 import { ankiScheduler } from "../schedulers/ankiScheduler";
-import { dailyPageUIDToCrossBrowserDate, getRoamDate } from "./helperFunctions";
+import { dailyPageUIDToCrossBrowserDate, getRoamDate, sleep } from "./helperFunctions";
+import { setLoading } from "../ui/uiElements";
 
 const recurDeck = (part) => {
 	const result = [];
@@ -261,8 +262,11 @@ export const filterCardsOverLimit = (settings, cards, todayReviewedCards) => {
 };
 
 export const loadCards = async (hasLimits, settings, asyncQueryFunction, dateBasis = new Date()) => {
+	setLoading(true);
+	await sleep(50)
 	let cards = await queryDueCards(settings, dateBasis, asyncQueryFunction);
 	const todayReviewedCards = await queryTodayReviewedCards(settings, asyncQueryFunction);
+	setLoading(false);
 
 	let extraCardsResult;
 	if (hasLimits) {

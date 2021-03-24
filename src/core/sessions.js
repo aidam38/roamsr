@@ -4,7 +4,7 @@ import { loadCards } from "./loadingCards";
 import { goToCurrentCard } from "./mainFunctions";
 import { setCards, setCurrentCardIndex, setLimitActivation, standbyState } from "./state";
 import { setCustomStyle, removeCustomStyle, removeRoamsrMainviewCSS } from "../ui/styles";
-import { addWidget, removeContainer, removeReturnButton, updateCounters } from "../ui/uiElements";
+import { addWidget, removeContainer, removeReturnButton, setLoading, updateCounters } from "../ui/uiElements";
 import { hideLeftSidebar, showLeftSidebar } from "../ui/hiding-sidebar";
 
 const defaultSettings = {
@@ -67,8 +67,8 @@ export const startSession = async () => {
 			// Change widget
 			var widget = document.querySelector(".roamsr-widget");
 			widget.innerHTML =
-				"<div style='padding: 5px 0px'><span class='bp3-icon bp3-icon-cross'></span> END SESSION</div>";
-			widget.onclick = endSession;
+				"<div class='flex-h-box' style='padding: 5px 0px; width: 100%; height: 100%; align-items: center; justify-content: space-around'><div><span class='bp3-icon bp3-icon-cross'></span> END SESSION</div></div>";
+			widget.firstChild.onclick = endSession;
 		}
 	}
 };
@@ -79,9 +79,7 @@ export const endSession = async () => {
 
 	standbyState();
 
-	// Change widget
-	removeSelector(".roamsr-widget");
-	addWidget();
+	setLoading(true);
 
 	// Remove elements
 	var doStuff = async () => {

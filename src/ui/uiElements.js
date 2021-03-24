@@ -174,12 +174,19 @@ export const addDelimiter = () => {
 	pushBeforeStarredPages(delimiter)
 }
 
-const createWidget = () => {
-	var widget = Object.assign(document.createElement("div"), {
+const createWidgetContainer = () => {
+	var widgetContainer = Object.assign(document.createElement("div"), {
 		className: "log-button flex-h-box roamsr-widget",
 	});
-	widget.style.cssText = "align-items: center; justify-content: space-around; padding-top: 8px;";
+	widgetContainer.style.cssText = "align-items: center; justify-content: space-around; padding-top: 8px; height: 47px;";
+	return widgetContainer;
+}
 
+const createWidgetContent = () => {
+	var widgetContent = Object.assign(document.createElement("div"), {
+		className: "flex-h-box roamsr-widget__content"
+	})
+	widgetContent.style.cssText = "align-items: center; justify-content: space-around; width: 100%;";
 	var reviewButton = Object.assign(document.createElement("div"), {
 		className: "bp3-button bp3-minimal roamsr-widget__review-button",
 		innerHTML: `<span style="padding-right: 8px;"><svg width="16" height="16" version="1.1" viewBox="0 0 4.2333 4.2333" style="color:5c7080;">
@@ -209,24 +216,38 @@ const createWidget = () => {
 	counterContainer.style.cssText = "justify-content: center; width: 50%";
 	counterContainer.append(counter);
 
-	widget.append(reviewButton, counterContainer);
+	widgetContent.append(reviewButton, counterContainer);
 
-	return widget;
+	return widgetContent;
 };
 
 export const addWidget = () => {
 	if (!document.querySelector(".roamsr-widget")) {
-		var widget = createWidget();
 
-		pushBeforeStarredPages(widget)
+		var widgetContainer = createWidgetContainer();
+		var widgetContent = createWidgetContent();
+		widgetContainer.append(widgetContent)
+
+		pushBeforeStarredPages(widgetContainer)
 	}
 };
 
+
+const createLoader = () => {
+	return Object.assign(document.createElement("div"), {
+		classList: "loader"
+	})
+}
+
 export const setLoading = (loading) => {
-	if (loading) {
-
-	}
-	else {
-
+	var widgetContainer = document.querySelector(".roamsr-widget");
+	if (widgetContainer) {
+		if (loading) {
+			widgetContainer.innerHTML = createLoader().outerHTML;
+		}
+		else {
+			widgetContainer.innerHTML = "";
+			widgetContainer.append(createWidgetContent())
+		}
 	}
 }

@@ -30,6 +30,7 @@ import {
 	removeReturnButton,
 	createWidget,
 	addWidget,
+	setLoading,
 } from "./ui/uiElements";
 
 export const exposeInternalAPI = () => {
@@ -128,6 +129,8 @@ export const exposeInternalAPI = () => {
 
 	/* ====== {{sr}} BUTTON ====== */
 	roamsr.buttonClickHandler = buttonClickHandler;
+
+	roamsr.setLoading = setLoading;
 };
 
 exposeInternalAPI();
