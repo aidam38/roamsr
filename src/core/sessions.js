@@ -23,6 +23,9 @@ const defaultSettings = {
 
 export const loadSettings = () => {
 	roamsr.settings = Object.assign(defaultSettings, window.roamsrUserSettings);
+	if (roamsr.settings.mainTag) {
+		roamsr.settings.mainTags.push(roamsr.settings.mainTag)
+	}
 };
 
 export const loadState = async (i) => {
@@ -60,7 +63,7 @@ export const startSession = async () => {
 					// so we just offer the setting-option for now
 					// at some point the API might include the left sidebar and not only the right
 					// then we could offer re-opening the left sidebar after the session
-				} catch (e) {}
+				} catch (e) { }
 			}
 
 			console.log("The queue: ");
@@ -80,7 +83,7 @@ export const startSession = async () => {
 };
 
 export const endSession = async () => {
-	window.onhashchange = () => {};
+	window.onhashchange = () => { };
 	console.log("Ending sesion.");
 
 	standbyState();
