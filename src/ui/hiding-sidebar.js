@@ -19,10 +19,12 @@ const simulateMouseEvents = (element, events, opts) => {
 
 export const showLeftSidebar = async () => {
     var firstButton = document.querySelector(".bp3-icon-menu")
-    var secondButton = document.querySelector(".bp3-icon-menu-open")
-    simulateMouseEvents(firstButton, ["mouseover"])
-    await sleep(50);
-    simulateMouseEvents(secondButton, ["mousedown", "click", "mouseup"])
+    if (firstButton) {
+        simulateMouseEvents(firstButton, ["mouseover"])
+        await sleep(150);
+        var secondButton = document.querySelector(".bp3-icon-menu-open")
+        secondButton.click();
+    }
 }
 
 export const hideLeftSidebar = () => {
