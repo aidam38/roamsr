@@ -8,7 +8,7 @@ import { loadSettings, loadState } from "./core/sessions";
 import { buttonClickHandler } from "./ui/srButton";
 import { standbyState } from "./core/state";
 import { addBasicStyles } from "./ui/styles";
-import { addWidget } from "./ui/uiElements";
+import { addDelimiter, addWidget } from "./ui/uiElements";
 
 export const init = () => {
 	var VERSION = "v1.0.1";
@@ -24,6 +24,7 @@ export const init = () => {
 	loadSettings();
 	addBasicStyles();
 	loadState(-1).then(() => {
+		addDelimiter();
 		addWidget();
 	});
 

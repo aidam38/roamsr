@@ -157,7 +157,24 @@ export const removeReturnButton = () => {
 };
 
 // SIDEBAR WIDGET
-export const createWidget = () => {
+const pushBeforeStarredPages = (element) => {
+	var sidebar = document.querySelector(".roam-sidebar-content");
+	var starredPages = document.querySelector(".starred-pages-wrapper");
+
+	sidebar.insertBefore(element, starredPages);
+}
+
+export const addDelimiter = () => {
+	removeSelector(".roamsr-widget-delimiter");
+	var delimiter = Object.assign(document.createElement("div"), {
+		className: "roamsr-widget-delimiter",
+	});
+	delimiter.style.cssText = "flex: 0 0 1px; background-color: rgb(57, 75, 89); margin: 8px 20px;";
+
+	pushBeforeStarredPages(delimiter)
+}
+
+const createWidget = () => {
 	var widget = Object.assign(document.createElement("div"), {
 		className: "log-button flex-h-box roamsr-widget",
 	});
@@ -199,18 +216,17 @@ export const createWidget = () => {
 
 export const addWidget = () => {
 	if (!document.querySelector(".roamsr-widget")) {
-		removeSelector(".roamsr-widget-delimiter");
-		var delimiter = Object.assign(document.createElement("div"), {
-			className: "roamsr-widget-delimiter",
-		});
-		delimiter.style.cssText = "flex: 0 0 1px; background-color: rgb(57, 75, 89); margin: 8px 20px;";
-
 		var widget = createWidget();
 
-		var sidebar = document.querySelector(".roam-sidebar-content");
-		var starredPages = document.querySelector(".starred-pages-wrapper");
-
-		sidebar.insertBefore(delimiter, starredPages);
-		sidebar.insertBefore(widget, starredPages);
+		pushBeforeStarredPages(widget)
 	}
 };
+
+export const setLoading = (loading) => {
+	if (loading) {
+
+	}
+	else {
+
+	}
+}
