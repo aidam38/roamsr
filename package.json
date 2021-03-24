@@ -5,6 +5,7 @@
   "main": "./js/stable/main.js",
   "scripts": {
     "test": "jest",
+    "start": "parcel ./js/stable/debug.js",
     "build-debug": "parcel build ./js/stable/debug.js --no-source-maps --no-content-hash --no-minify",
     "build": "npm test && parcel build ./js/stable/main.js --no-source-maps --no-content-hash --no-minify",
     "build-min": "npm test && parcel build ./js/stable/main.js --no-source-maps --no-content-hash"

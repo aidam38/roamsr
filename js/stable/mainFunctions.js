@@ -5,7 +5,7 @@ import {
 	addExtraCardToQueue,
 	incrementCurrentCardIndex,
 	inquiryState,
-	reviewState,
+	questionState,
 	standbyState,
 } from "./state";
 import { hideAnswerAndCloze, removeRoamsrMainviewCSS } from "./styles";
@@ -180,5 +180,5 @@ export const goToCurrentCard = async () => {
 		window.onhashchange = () => {};
 	};
 
-	reviewState();
+	questionState();
 };

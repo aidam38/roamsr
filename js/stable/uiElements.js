@@ -2,7 +2,7 @@ import { removeSelector, getIntervalHumanReadable } from "./helperFunctions";
 import { loadCards } from "./loadingCards";
 import { flagCard, stepToNext, responseHandler, goToCurrentCard } from "./mainFunctions";
 import { getCurrentCard, startSession } from "./sessions";
-import { reviewState, setCards, toggleLimitActivation } from "./state";
+import { setCards, toggleLimitActivation } from "./state";
 import { showAnswerAndCloze } from "./styles";
 
 // COMMON

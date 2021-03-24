@@ -1,7 +1,7 @@
 // possible states
 // inquiry: roaming around, "Return"-button is visible
-// review: answer closed
-// test: answer open
+// question: answer closed
+// answer: answer open
 // standby: in Roam
 
 // all mutation of state is located here
@@ -11,8 +11,8 @@ export const setStatus = (status) => {
 	roamsr.state = { ...roamsr.state, status };
 };
 
-export const reviewState = () => setStatus("review");
-export const testState = () => setStatus("test");
+export const questionState = () => setStatus("question");
+export const answerState = () => setStatus("answer");
 export const inquiryState = () => setStatus("inquiry");
 export const standbyState = () => setStatus("standby");
 

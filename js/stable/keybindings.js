@@ -3,7 +3,7 @@ import { endSession, getCurrentCard } from "./sessions";
 import { showAnswerAndCloze } from "./styles";
 import { addResponseButtons } from "./uiElements";
 
-const reviewAndTestCodeMap = {
+const questionAndAnswerCodeMap = {
 	KeyF: flagCard,
 	KeyS: (e) => {
 		if (!e.ctrlKey && !e.shiftKey) stepToNext();
@@ -14,17 +14,17 @@ const reviewAndTestCodeMap = {
 	},
 };
 
-const reviewCodeMap = {
+const questionCodeMap = {
 	Space: () => {
 		showAnswerAndCloze();
 		addResponseButtons();
 	},
-	...reviewAndTestCodeMap,
+	...questionAndAnswerCodeMap,
 };
 
 const handleNthResponse = async (n, responses) => {
 	console.log("Handling response: " + n);
-	// TODO: we shouldnt need to check for having responses because we are in the test-state
+	// TODO: we shouldnt need to check for having responses because we are in the answer-state
 	if (n >= 0) {
 		const res = responses[n];
 		await responseHandler(getCurrentCard(), res.interval, res.signal.toString());
@@ -48,19 +48,19 @@ const handleLetterResponse = (letter) => {
 };
 const lettersCodeMap = Object.fromEntries(letters.map((letter) => [letter, () => handleLetterResponse(letter)]));
 
-const testCodeMap = {
+const answerCodeMap = {
 	...digitsCodeMap,
 	...lettersCodeMap,
-	...reviewAndTestCodeMap,
-	Space: () => handleNthResponse(2, getCurrentCard().algorithm(getCurrentCard().history)),
+	...questionAndAnswerCodeMap,
+	Space: () => handleDigitResponse(3),
 };
 
-const statusCodeMaps = { review: reviewCodeMap, test: testCodeMap };
+const statusCodeMaps = { question: questionCodeMap, answer: answerCodeMap };
 
 // note: changing these requires reloading Roam because of the keylistener
 export const processKey = (e) => {
 	// if we are editing, dont process
-	if (document.activeElement.type === "textarea") return;
+	if (document.activeElement.type === "textarea" || document.activeElement.type === "input") return;
 
 	// this is not be necessary anymore because we have status
 	// !location.href.includes(getCurrentCard().uid)
@@ -75,7 +75,7 @@ export const processKey = (e) => {
 };
 
 export const processKeyAlways = (e) => {
-	// Alt+enter TODO
+	// TODO: Alt+enter
 };
 
 export const addKeyListener = () => {

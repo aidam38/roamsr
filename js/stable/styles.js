@@ -1,4 +1,4 @@
-import { standbyState, testState } from "./state";
+import { standbyState, answerState } from "./state";
 
 const basicCSS = `
 .roamsr-widget__review-button {
@@ -99,7 +99,7 @@ export const showAnswerAndCloze = () => {
 	// change to standby first to prevent unwanted key processing
 	standbyState();
 	removeRoamsrMainviewCSS();
-	testState();
+	answerState();
 };
 
 export const hideAnswerAndCloze = () => {
