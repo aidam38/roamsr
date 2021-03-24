@@ -24,7 +24,7 @@ const defaultSettings = {
 export const loadSettings = () => {
 	roamsr.settings = Object.assign(defaultSettings, window.roamsrUserSettings);
 	if (roamsr.settings.mainTag) {
-		roamsr.settings.mainTags.push(roamsr.settings.mainTag)
+		roamsr.settings.mainTags = [roamsr.settings.mainTag];
 	}
 };
 
