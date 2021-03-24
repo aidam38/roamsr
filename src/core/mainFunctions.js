@@ -8,7 +8,7 @@ import {
 	questionState,
 	standbyState,
 } from "./state";
-import { hideAnswerAndCloze, removeRoamsrMainviewCSS } from "./styles";
+import { hideAnswerAndCloze, removeRoamsrMainviewCSS } from "../ui/styles";
 import {
 	updateCounters,
 	removeReturnButton,
@@ -16,7 +16,7 @@ import {
 	addShowAnswerButton,
 	removeContainer,
 	addReturnButton,
-} from "./uiElements";
+} from "../ui/uiElements";
 
 export const scheduleCardIn = async (card, interval) => {
 	var nextDate = new Date();

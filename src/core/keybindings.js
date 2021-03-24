@@ -1,7 +1,7 @@
 import { flagCard, responseHandler, stepToNext } from "./mainFunctions";
 import { endSession, getCurrentCard } from "./sessions";
-import { showAnswerAndCloze } from "./styles";
-import { addResponseButtons } from "./uiElements";
+import { showAnswerAndCloze } from "../ui/styles";
+import { addResponseButtons } from "../ui/uiElements";
 
 const questionAndAnswerCodeMap = {
 	KeyF: flagCard,

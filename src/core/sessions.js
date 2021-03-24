@@ -3,8 +3,8 @@ import { addKeyListener, removeKeyListener } from "./keybindings";
 import { loadCards } from "./loadingCards";
 import { goToCurrentCard } from "./mainFunctions";
 import { setCards, setCurrentCardIndex, setLimitActivation, standbyState } from "./state";
-import { setCustomStyle, removeCustomStyle, removeRoamsrMainviewCSS } from "./styles";
-import { addWidget, removeContainer, removeReturnButton, updateCounters } from "./uiElements";
+import { setCustomStyle, removeCustomStyle, removeRoamsrMainviewCSS } from "../ui/styles";
+import { addWidget, removeContainer, removeReturnButton, updateCounters } from "../ui/uiElements";
 
 const defaultSettings = {
 	closeLeftSideBar: true,

@@ -1,4 +1,4 @@
-import { standbyState, answerState } from "./state";
+import { standbyState, answerState } from "../core/state";
 
 const basicCSS = `
 .roamsr-widget__review-button {

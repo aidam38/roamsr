@@ -4,11 +4,11 @@
    https://github.com/aidam38/roamsr
  */
 
-import { loadSettings, loadState } from "./sessions";
-import { buttonClickHandler } from "./srButton";
-import { standbyState } from "./state";
-import { addBasicStyles } from "./styles";
-import { addWidget } from "./uiElements";
+import { loadSettings, loadState } from "./core/sessions";
+import { buttonClickHandler } from "./ui/srButton";
+import { standbyState } from "./core/state";
+import { addBasicStyles } from "./ui/styles";
+import { addWidget } from "./ui/uiElements";
 
 export const init = () => {
 	var VERSION = "v1.0.1";

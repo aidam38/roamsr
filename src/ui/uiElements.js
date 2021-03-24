@@ -1,8 +1,8 @@
-import { removeSelector, getIntervalHumanReadable } from "./helperFunctions";
-import { loadCards } from "./loadingCards";
-import { flagCard, stepToNext, responseHandler, goToCurrentCard } from "./mainFunctions";
-import { getCurrentCard, startSession } from "./sessions";
-import { setCards, toggleLimitActivation } from "./state";
+import { removeSelector, getIntervalHumanReadable } from "../core/helperFunctions";
+import { loadCards } from "../core/loadingCards";
+import { flagCard, stepToNext, responseHandler, goToCurrentCard } from "../core/mainFunctions";
+import { getCurrentCard, startSession } from "../core/sessions";
+import { setCards, toggleLimitActivation } from "../core/state";
 import { showAnswerAndCloze } from "./styles";
 
 // COMMON

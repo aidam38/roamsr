@@ -1,4 +1,4 @@
-import { ankiScheduler } from "./ankiScheduler";
+import { ankiScheduler } from "../schedulers/ankiScheduler";
 import { dailyPageUIDToCrossBrowserDate, getRoamDate } from "./helperFunctions";
 
 const recurDeck = (part) => {

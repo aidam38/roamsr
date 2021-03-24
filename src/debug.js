@@ -1,4 +1,4 @@
-import { ankiScheduler } from "./ankiScheduler";
+import { ankiScheduler } from "./schedulers/ankiScheduler";
 import {
 	sleep,
 	createUid,
@@ -7,17 +7,17 @@ import {
 	dailyPageUIDToCrossBrowserDate,
 	getRoamDate,
 	getIntervalHumanReadable,
-} from "./helperFunctions";
-import { processKey, processKeyAlways, addKeyListener, removeKeyListener } from "./keybindings";
-import { loadCards } from "./loadingCards";
-import { scheduleCardIn, responseHandler, flagCard, stepToNext, goToCurrentCard } from "./mainFunctions";
-import { loadSettings, loadState, getCurrentCard, startSession, endSession } from "./sessions";
-import { buttonClickHandler } from "./srButton";
+} from "./core/helperFunctions";
+import { processKey, processKeyAlways, addKeyListener, removeKeyListener } from "./core/keybindings";
+import { loadCards } from "./core/loadingCards";
+import { scheduleCardIn, responseHandler, flagCard, stepToNext, goToCurrentCard } from "./core/mainFunctions";
+import { loadSettings, loadState, getCurrentCard, startSession, endSession } from "./core/sessions";
+import { buttonClickHandler } from "./ui/srButton";
 
 // need this to force execution
 import { init } from "./main";
 
-import { addBasicStyles, setCustomStyle, showAnswerAndCloze } from "./styles";
+import { addBasicStyles, setCustomStyle, showAnswerAndCloze } from "./ui/styles";
 import {
 	getCounter,
 	updateCounters,
@@ -30,7 +30,7 @@ import {
 	removeReturnButton,
 	createWidget,
 	addWidget,
-} from "./uiElements";
+} from "./ui/uiElements";
 
 export const exposeInternalAPI = () => {
 	/* ====== SCHEDULERS / ALGORITHMS ====== */
