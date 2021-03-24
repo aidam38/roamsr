@@ -155,22 +155,28 @@ export const goToCurrentCard = async () => {
 	// change to standby first to prevent unwanted key processing
 	standbyState();
 
-	window.onhashchange = () => {};
+	window.onhashchange = () => { };
 	hideAnswerAndCloze();
 	removeReturnButton();
 
-	goToUid(getCurrentCard().uid);
-	await sleep(50);
-	addContainer(roamsr.state);
-	addShowAnswerButton();
+	var doStuff = async () => {
+		goToUid(getCurrentCard().uid);
+		await sleep(50);
+		addContainer(roamsr.state);
+		addShowAnswerButton();
+	}
+
+	await doStuff();
+	questionState();
+	await sleep(200);
+	await doStuff();
 
 	window.onhashchange = () => {
 		inquiryState();
 		removeContainer();
 		addReturnButton();
 		removeRoamsrMainviewCSS();
-		window.onhashchange = () => {};
+		window.onhashchange = () => { };
 	};
 
-	questionState();
 };
