@@ -162,7 +162,7 @@ const pushBeforeStarredPages = (element) => {
 	var starredPages = document.querySelector(".starred-pages-wrapper");
 
 	sidebar.insertBefore(element, starredPages);
-}
+};
 
 export const addDelimiter = () => {
 	removeSelector(".roamsr-widget-delimiter");
@@ -171,8 +171,8 @@ export const addDelimiter = () => {
 	});
 	delimiter.style.cssText = "flex: 0 0 1px; background-color: rgb(57, 75, 89); margin: 8px 20px;";
 
-	pushBeforeStarredPages(delimiter)
-}
+	pushBeforeStarredPages(delimiter);
+};
 
 const createWidgetContainer = () => {
 	var widgetContainer = Object.assign(document.createElement("div"), {
@@ -180,12 +180,12 @@ const createWidgetContainer = () => {
 	});
 	widgetContainer.style.cssText = "align-items: center; justify-content: space-around; padding-top: 8px; height: 47px;";
 	return widgetContainer;
-}
+};
 
 const createWidgetContent = () => {
 	var widgetContent = Object.assign(document.createElement("div"), {
-		className: "flex-h-box roamsr-widget__content"
-	})
+		className: "flex-h-box roamsr-widget__content",
+	});
 	widgetContent.style.cssText = "align-items: center; justify-content: space-around; width: 100%;";
 	var reviewButton = Object.assign(document.createElement("div"), {
 		className: "bp3-button bp3-minimal roamsr-widget__review-button",
@@ -223,31 +223,28 @@ const createWidgetContent = () => {
 
 export const addWidget = () => {
 	if (!document.querySelector(".roamsr-widget")) {
-
 		var widgetContainer = createWidgetContainer();
 		var widgetContent = createWidgetContent();
-		widgetContainer.append(widgetContent)
+		widgetContainer.append(widgetContent);
 
-		pushBeforeStarredPages(widgetContainer)
+		pushBeforeStarredPages(widgetContainer);
 	}
 };
 
-
 const createLoader = () => {
 	return Object.assign(document.createElement("div"), {
-		classList: "loader"
-	})
-}
+		classList: "loader",
+	});
+};
 
 export const setLoading = (loading) => {
 	var widgetContainer = document.querySelector(".roamsr-widget");
 	if (widgetContainer) {
 		if (loading) {
 			widgetContainer.innerHTML = createLoader().outerHTML;
-		}
-		else {
+		} else {
 			widgetContainer.innerHTML = "";
-			widgetContainer.append(createWidgetContent())
+			widgetContainer.append(createWidgetContent());
 		}
 	}
-}
+};

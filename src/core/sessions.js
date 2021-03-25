@@ -74,8 +74,8 @@ export const startSession = async () => {
 };
 
 export const endSession = async () => {
-	window.onhashchange = () => { };
-	console.log("Ending sesion.");
+	window.onhashchange = () => {};
+	console.log("Ending session.");
 
 	standbyState();
 
@@ -88,7 +88,7 @@ export const endSession = async () => {
 		removeCustomStyle();
 		removeRoamsrMainviewCSS();
 		removeKeyListener();
-		showLeftSidebar();
+		await showLeftSidebar();
 		goToUid();
 	};
 
@@ -98,5 +98,5 @@ export const endSession = async () => {
 	await sleep(300);
 
 	// Reload state
-	loadState(-1);
+	await loadState(-1);
 };

@@ -155,7 +155,7 @@ export const goToCurrentCard = async () => {
 	// change to standby first to prevent unwanted key processing
 	standbyState();
 
-	window.onhashchange = () => { };
+	window.onhashchange = () => {};
 	hideAnswerAndCloze();
 	removeReturnButton();
 
@@ -164,7 +164,7 @@ export const goToCurrentCard = async () => {
 		await sleep(50);
 		addContainer(roamsr.state);
 		addShowAnswerButton();
-	}
+	};
 
 	await doStuff();
 	questionState();
@@ -176,7 +176,6 @@ export const goToCurrentCard = async () => {
 		removeContainer();
 		addReturnButton();
 		removeRoamsrMainviewCSS();
-		window.onhashchange = () => { };
+		window.onhashchange = () => {};
 	};
-
 };

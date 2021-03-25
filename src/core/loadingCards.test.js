@@ -2,11 +2,20 @@ import { filterCardsOverLimit, isLastRelevantDeck, isNew } from "./loadingCards"
 
 test("isNew", () => {
 	// card can be ref'ed everywhere and still be new
-	let res = { _refs: [{ page: { uid: "01-28-2020" } }, { page: { uid: "test" } }] };
+	let res = {
+		_refs: [{ page: { uid: "01-28-2020" } }, { page: { uid: "test" } }],
+	};
 	expect(isNew(res)).toBe(true);
 
 	// card is only not new if it is ref'ed under a review-parent
-	res = { _refs: [{ page: { uid: "01-28-2020" }, _children: [{ refs: [{ title: "roam/sr/review" }] }] }] };
+	res = {
+		_refs: [
+			{
+				page: { uid: "01-28-2020" },
+				_children: [{ refs: [{ title: "roam/sr/review" }] }],
+			},
+		],
+	};
 	expect(isNew(res)).toBe(false);
 });
 
@@ -33,7 +42,12 @@ test("isLastRelevantDeck", () => {
 
 test("filterCardsOverLimit: defaultDeck", () => {
 	const settings = {
-		defaultDeck: { algorithm: null, config: {}, newCardLimit: 1, reviewLimit: 1 },
+		defaultDeck: {
+			algorithm: null,
+			config: {},
+			newCardLimit: 1,
+			reviewLimit: 1,
+		},
 		customDecks: [],
 	};
 	const cards = [
@@ -85,7 +99,12 @@ test("filterCardsOverLimit: multiple decks", () => {
 	const filterForOld = (arr) => arr.filter((v) => !v.isNew);
 
 	const settings = {
-		defaultDeck: { algorithm: null, config: {}, newCardLimit: 4, reviewLimit: 5 },
+		defaultDeck: {
+			algorithm: null,
+			config: {},
+			newCardLimit: 4,
+			reviewLimit: 5,
+		},
 		customDecks: [
 			{ tag: "deck1", newCardLimit: 7, reviewLimit: 5 },
 			{ tag: "deck2", newCardLimit: 8, reviewLimit: 11 },
