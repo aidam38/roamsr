@@ -1,6 +1,5 @@
 node_modules
 .cache
-.parcel-cache
 dist
 js
 .vscode
