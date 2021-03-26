@@ -1,6 +1,6 @@
 /* roam/sr - Spaced Repetition in Roam Research
    Author: Adam Krivka
-   v1.0.1
+   v1.1.0
    https://github.com/aidam38/roamsr
  */
 
@@ -11,7 +11,7 @@ import { addBasicStyles } from "./ui/styles";
 import { addDelimiter, addWidget } from "./ui/uiElements";
 
 export const init = () => {
-	var VERSION = "v1.0.1";
+	var VERSION = "v1.1.0";
 
 	if (!window.roamsr) window.roamsr = { state: {}, settings: {} };
 
