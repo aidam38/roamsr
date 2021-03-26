@@ -1,14 +1,14 @@
 {
 	"name": "roamsr",
-	"version": "1.0.1",
+	"version": "1.1.0",
 	"description": "For more info, see: https://roamresearch.com/#/app/roam-depot-developers/page/uQSCwVKx0",
-	"main": "./js/stable.js",
+	"main": "./src/main.js",
 	"scripts": {
 		"format": "prettier --write 'src/**/*.{js,json}'",
 		"test": "jest",
 		"start": "parcel ./src/debug.js",
-		"build-debug": "parcel build ./src/debug.js --no-source-maps --no-content-hash --no-optimize",
-		"build": "npm test && parcel build ./src/main.js --no-source-maps --no-content-hash --no-optimize"
+		"build-debug": "parcel build ./src/debug.js --no-source-maps --no-content-hash --no-minify --out-file stable.js -d ./js/",
+		"build": "npm test && parcel build ./src/main.js --no-source-maps --no-content-hash --no-minify --out-file stable.js -d ./js/"
 	},
 	"repository": {
 		"type": "git",
@@ -25,7 +25,7 @@
 		"@types/jest": "^26.0.20",
 		"babel-jest": "^26.6.3",
 		"jest": "^26.6.3",
-		"parcel": "^2.0.0-beta.2",
+		"parcel-bundler": "^1.12.3",
 		"prettier": "^2.2.1"
 	},
 	"browserslist": [
