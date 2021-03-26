@@ -1,0 +1,43 @@
+{
+	"name": "roamsr",
+	"version": "1.0.1",
+	"description": "For more info, see: https://roamresearch.com/#/app/roam-depot-developers/page/uQSCwVKx0",
+	"main": "./js/stable.js",
+	"scripts": {
+		"format": "prettier --write 'src/**/*.{js,json}'",
+		"test": "jest",
+		"start": "parcel ./src/debug.js",
+		"build-debug": "parcel build ./src/debug.js --no-source-maps --no-content-hash --no-optimize",
+		"build": "npm test && parcel build ./src/main.js --no-source-maps --no-content-hash --no-optimize"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/aidam38/roamsr.git"
+	},
+	"author": "",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/aidam38/roamsr/issues"
+	},
+	"homepage": "https://github.com/aidam38/roamsr#readme",
+	"devDependencies": {
+		"@babel/preset-env": "^7.13.9",
+		"@types/jest": "^26.0.20",
+		"babel-jest": "^26.6.3",
+		"jest": "^26.6.3",
+		"parcel": "^2.0.0-beta.2",
+		"prettier": "^2.2.1"
+	},
+	"browserslist": [
+		"last 3 and_chr versions",
+		"last 3 chrome versions",
+		"last 3 opera versions",
+		"last 3 ios_saf versions",
+		"last 3 safari versions",
+		"last 3 firefox versions"
+	],
+	"prettier": {
+		"printWidth": 120,
+		"useTabs": true
+	}
+}

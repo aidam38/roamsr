@@ -1,3 +1,6 @@
 node_modules
-dist
 .cache
+.parcel-cache
+dist
+js
+.vscode
