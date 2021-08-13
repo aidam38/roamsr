@@ -39,15 +39,15 @@ const getAlgorithm = (res, settings) => {
 const isReviewBlock = (block) =>
 	// is a child-block
 	block._children &&
-	// first parent has refs
-	block._children[0].refs
+		// first parent has refs
+		block._children[0].refs
 		? // refs of parent include "roam/sr/review" = parent is a review-parent-block
-		  block._children[0].refs.map((ref2) => ref2.title).includes("roam/sr/review")
+		block._children[0].refs.map((ref2) => ref2.title).includes("roam/sr/review")
 		: false;
 
 // first ref is always a r/x-page where x is the repetition count / signal value
 // r/x -> x is done via the slice
-const extractSignalFromReviewBlock = (block) => (block.refs[0] ? block.refs[0].title.slice(2) : null);
+const extractSignalFromReviewBlock = (block) => (block.refs && block.refs[0] && block.refs[0].title.slice(2));
 
 const reviewBlockToHistoryUnit = (block) => {
 	return {
@@ -72,9 +72,9 @@ const extractHistoryFromQueryResult = (result) => {
 const isDue = (card, dateBasis) =>
 	card.history.length > 0
 		? // if one history unit contains no signal and fits the date, the card is due
-		  card.history.some((review) => {
-				return !review.signal && new Date(review.date) <= dateBasis;
-		  })
+		card.history.some((review) => {
+			return !review.signal && new Date(review.date) <= dateBasis;
+		})
 		: true;
 
 const srPageTagsToClause = (tags) => "(or " + tags.map((tag) => `[?srPage :node/title "${tag}"]`).join("\n") + ")";
