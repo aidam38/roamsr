@@ -82,24 +82,24 @@ const srPageTagsToClause = (tags) => "(or " + tags.map((tag) => `[?srPage :node/
 //cards with the flag-tag or the "query"-tag are not permissible
 const createQueryForAllPermissibleCards = (settings) => `[
 			:find (pull ?card [
-			  :block/string 
-			  :block/uid 
-			  {:block/refs [:node/title]} 
-			  {:block/_refs 
-				[:block/uid :block/string 
-				 {:block/_children 
-						[:block/uid {:block/refs [:node/title]}]} 
-				 {:block/refs [:node/title]} 
+			  :block/string
+			  :block/uid
+			  {:block/refs [:node/title]}
+			  {:block/_refs
+				[:block/uid :block/string
+				 {:block/_children
+						[:block/uid {:block/refs [:node/title]}]}
+				 {:block/refs [:node/title]}
 				 {:block/page [:block/uid]}]}
 			  {:block/_children ...}
 			])
-			:where 
+			:where
 			  ${srPageTagsToClause(settings.mainTags)}
-			  [?card :block/refs ?srPage] 
-			  (not-join [?card] 
+			  [?card :block/refs ?srPage]
+			  (not-join [?card]
 				[?flagPage :node/title "${settings.flagTag}"]
 				[?card :block/refs ?flagPage])
-			  (not-join [?card] 
+			  (not-join [?card]
 				[?queryPage :node/title "query"]
 				[?card :block/refs ?queryPage])
 			]`;
@@ -129,25 +129,25 @@ const queryDueCards = async (settings, dateBasis, asyncQueryFunction) => {
 };
 
 const getTodayQuery = (settings, todayUid) => `[
-    :find (pull ?card 
-      [:block/uid 
-      {:block/refs [:node/title]} 
-      {:block/_refs 
+    :find (pull ?card
+      [:block/uid
+      {:block/refs [:node/title]}
+      {:block/_refs
 		[
 			{:block/page [:block/uid]}
-			{:block/_children 
+			{:block/_children
 				[:block/uid {:block/refs [:node/title]}]}
-		]}]) 
+		]}])
       (pull ?review [:block/refs])
-    :where 
+    :where
 	  ${srPageTagsToClause(settings.mainTags)}
-      [?card :block/refs ?srPage] 
-      [?review :block/refs ?card] 
-      [?reviewPage :node/title "roam/sr/review"] 
-      [?reviewParent :block/refs ?reviewPage] 
-      [?reviewParent :block/children ?review] 
-      [?todayPage :block/uid "${todayUid}"] 
-      [?reviewParent :block/page ?todayPage] 
+      [?card :block/refs ?srPage]
+      [?review :block/refs ?card]
+      [?reviewPage :node/title "roam/sr/review"]
+      [?reviewParent :block/refs ?reviewPage]
+      [?reviewParent :block/children ?review]
+      [?todayPage :block/uid "${todayUid}"]
+      [?reviewParent :block/page ?todayPage]
     ]`;
 
 const queryTodayReviewedCards = async (settings, asyncQueryFunction) => {
@@ -289,3 +289,13 @@ export const loadCards = async (hasLimits, settings, asyncQueryFunction, dateBas
 
 	return { extraCards: extraCardsResult, cards };
 };
+
+export const getReviewBlocks = () => {
+  return window.roamAlphaAPI.q(`[:find ?puid ?u :where
+    [?r :block/uid ?u]
+    [?r :block/refs ?b]
+    [?b :node/title "roam/sr/review"]
+    [?parent :block/children ?r]
+    [?parent :block/uid ?puid]
+  ]`);
+}

@@ -1,6 +1,6 @@
 import { removeSelector, goToUid, sleep } from "./helperFunctions";
 import { addKeyListener, removeKeyListener } from "./keybindings";
-import { loadCards } from "./loadingCards";
+import { getReviewBlocks, loadCards } from "./loadingCards";
 import { goToCurrentCard } from "./mainFunctions";
 import { setCards, setCurrentCardIndex, setLimitActivation, standbyState } from "./state";
 import { setCustomStyle, removeCustomStyle, removeRoamsrMainviewCSS } from "../ui/styles";
@@ -33,6 +33,7 @@ export const loadState = async (i) => {
 	setLimitActivation(true);
 	setCurrentCardIndex(i);
 	const { cards, extraCards } = await loadCards(roamsr.state.limits, roamsr.settings, window.roamAlphaAPI.q);
+  roamsr.state.reviewBlocks = getReviewBlocks();
 	setCards(cards, extraCards);
 	updateCounters(roamsr.state);
 	return;
