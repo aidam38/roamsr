@@ -24,39 +24,34 @@ export const scheduleCardIn = async (card, interval) => {
 
 	var nextRoamDate = getRoamDate(nextDate);
 
-	// Create daily note if it doesn't exist yet
-	await window.roamAlphaAPI.createPage({
-		page: {
-			title: nextRoamDate.title,
-		},
-	});
+  var cachedNextRoamDate = roamsr.state.reviewBlocks.find(e => e[0] === nextRoamDate.uid);
+  var topLevelUid;
 
-	await sleep();
+  if (cachedNextRoamDate) {
+    topLevelUid = cachedNextRoamDate[1];
+  } else {
+    await window.roamAlphaAPI.createPage({
+      page: {
+        title: nextRoamDate.title,
+      },
+    });
+    await sleep();
 
-	// Query for the [[roam/sr/review]] block
-	var queryReviewBlock = window.roamAlphaAPI.q(
-		'[:find (pull ?reviewBlock [:block/uid]) :in $ ?dailyNoteUID :where [?reviewBlock :block/refs ?reviewPage] [?reviewPage :node/title "roam/sr/review"] [?dailyNote :block/children ?reviewBlock] [?dailyNote :block/uid ?dailyNoteUID]]',
-		nextRoamDate.uid
-	);
+    topLevelUid = createUid();
+    await window.roamAlphaAPI.createBlock({
+      location: {
+        "parent-uid": nextRoamDate.uid,
+        order: 0,
+      },
+      block: {
+        string: "[[roam/sr/review]]",
+        uid: topLevelUid,
+      },
+    });
+    await sleep();
 
-	// Check if it's there; if not, create it
-	var topLevelUid;
-	if (queryReviewBlock.length == 0) {
-		topLevelUid = createUid();
-		await window.roamAlphaAPI.createBlock({
-			location: {
-				"parent-uid": nextRoamDate.uid,
-				order: 0,
-			},
-			block: {
-				string: "[[roam/sr/review]]",
-				uid: topLevelUid,
-			},
-		});
-		await sleep();
-	} else {
-		topLevelUid = queryReviewBlock[0][0].uid;
-	}
+    roamsr.state.reviewBlocks.push([nextRoamDate.uid, topLevelUid]);
+  }
 
 	// Generate the block
 	var block = {
